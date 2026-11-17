@@ -89,3 +89,17 @@ Os `terminal*` são os uuid dos bornes da definição (não os `id` numéricos d
   nome do arquivo → nome do elemento → aviso.
 - Outra inconsistência da biblioteca: `arret-urgence_no.elmt` diz "NF" em francês e "NA" em
   português; o simulador segue o nome do arquivo (`_no`).
+
+## Circuito de força
+
+- Fonte trifásica (`src_3p_pe_n.elmt`): bornes nomeados `L1`, `L2`, `L3`, `N`, `PE`.
+- Contatos principais do contator: escravos com `type="power"`, `state="NO"`, `number="4"` e 8 bornes
+  **sem nome**. Cada polo = par de bornes na mesma coluna (mesmo `x`) do símbolo.
+- Disjuntor (`dis_mag_term_4f-1.elmt`) e relé térmico (`relais_therm4_1_wide.elmt`): mestres com
+  `type="protection"`. O simulador distingue o térmico pelo nome; os polos do térmico nunca abrem,
+  o disparo atua os contatos auxiliares vinculados (NF 95-96).
+- Motor (`moto_ac_3ph.elmt`): elemento simples com 4 bornes sem nome (3 fases + PE). A ordem U, V, W
+  é a ordem dos bornes no próprio símbolo (pelo `x`), então o sentido de rotação não depende de como o
+  motor foi girado no desenho.
+- Armadilha vista: o NF de proteção no comando foi vinculado primeiro ao **Q1** em vez do **F1**.
+  O simulador mostra a quais contatos cada proteção está ligada.

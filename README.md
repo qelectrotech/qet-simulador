@@ -9,10 +9,13 @@ Simulador de comandos elétricos que lê arquivos `.qet` do [QElectroTech](https
 
 Lê um diagrama de comando desenhado no QElectroTech e simula, no terminal, o
 comportamento de botoeiras, bobinas e contatos: selo, intertravamento, desligamento
-e temporizadores (retardo na energização e na desenergização).
+e temporizadores (retardo na energização e na desenergização). No circuito de força, mostra se o
+motor gira, o sentido de rotação, falta de fase e curto-circuito, com disjuntor e relé térmico.
 
 *Reads a control diagram drawn in QElectroTech and simulates push buttons, coils and
-contacts in the terminal (self-holding, interlocking, stop, on-delay and off-delay timers).*
+contacts in the terminal (self-holding, interlocking, stop, on-delay and off-delay timers). In the
+power circuit it shows motor running, direction of rotation, missing phase and short circuits, with
+circuit breaker and thermal overload relay.*
 
 Exemplo (reversão com intertravamento) / *Example (reversing starter with interlock):*
 
@@ -28,7 +31,8 @@ Exemplo (reversão com intertravamento) / *Example (reversing starter with inter
 ```
 
 Exemplos incluídos / *Included examples* (`circuitos-qet/`): partida direta, reversão com intertravamento,
-partida temporizada, estrela-triângulo / *DOL, reversing, timed start, star-delta*.
+partida temporizada, estrela-triângulo (comando) e partida direta com força / *DOL, reversing, timed
+start, star-delta (control), DOL with power circuit*.
 
 ## Como usar / How to use
 
@@ -40,7 +44,8 @@ python simulador.py ../circuitos-qet/reversao.qet
 ```
 
 Comandos / *Commands*: `S1` pulso / *pulse* · `+S1` mantém / *hold* · `-S1` solta / *release* ·
-`t 5` avança 5 s / *advance 5 s* · `tempo KT1 3` ajusta KT1 para 3 s / *set KT1 to 3 s* · `sair` / *quit*
+`t 5` avança 5 s / *advance 5 s* · `tempo KT1 3` ajusta KT1 para 3 s / *set KT1 to 3 s* ·
+`Q1` liga/desliga disjuntor / *breaker on/off* · `F1` sobrecarga no térmico / *thermal overload trip/reset* · `sair` / *quit*
 
 ## Regras para o desenho / Drawing rules
 
@@ -65,7 +70,8 @@ Detalhes do formato: [`notas/formato-qet.md`](notas/formato-qet.md)
 ## Limitações atuais / Current limitations
 
 - Uma folha por projeto / *single sheet*
-- Sem circuito de força / *no power circuit*
+- Força: motores trifásicos simples (3 bornes + PE); ainda sem motor de 6 bornes (estrela-triângulo)
+  / *power: simple 3-phase motors only; no 6-terminal motor yet*
 - Cargas em série não suportadas / *series loads not supported*
 
 ## Licença / License

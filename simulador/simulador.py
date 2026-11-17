@@ -32,11 +32,14 @@ def ler_definicoes(raiz):
         bornes = {t.attrib["uuid"]: t.attrib.get("name", "")
                   for t in d.iter("terminal")}
         nomes = [(n.text or "").strip() for n in d.iter("name")]  # nome em cada idioma
+        geo = {t.attrib["uuid"]: (float(t.attrib.get("x", 0)), float(t.attrib.get("y", 0)))
+               for t in d.iter("terminal")}
         defs[el.attrib["name"]] = {
             "link_type": d.attrib.get("link_type", "simple"),
             "kind": kind,
             "bornes": bornes,
             "nomes": nomes,
+            "geo": geo,                      # posição de cada borne no símbolo
         }
     return defs
 
@@ -70,10 +73,25 @@ def classificar(tipo, definicao):
     """Decide o papel do elemento no simulador. Devolve (papel, estado, origem)."""
     lt, kind = definicao["link_type"], definicao["kind"]
     nomes_bornes = set(definicao["bornes"].values())
+    arquivo = tipo.split("/")[-1].lower()
+    texto = " ".join(definicao["nomes"])
     if {"L", "N"} <= nomes_bornes:
         return "fonte", None, None
+    if {"L1", "L2", "L3"} <= nomes_bornes:
+        return "fonte3f", None, None
     if lt == "master" and kind.get("type") == "coil":
         return "bobina", None, None
+    if lt == "master" and kind.get("type") == "protection":
+        # Relé térmico: os polos de força nunca abrem; o disparo atua os contatos auxiliares.
+        # Disjuntor/seccionador: os polos abrem quando ele é desligado.
+        if arquivo.startswith("relais_therm") or re.search(
+                r"thermal relay|relais thermique|rel[eé] t[eé]rmico|thermorelais",
+                texto, re.I):
+            return "termico", None, None
+        return "disjuntor", None, None
+    if lt == "simple" and (arquivo.startswith("moto")
+                           or re.search(r"\bmotor|\bmoteur", texto, re.I)):
+        return "motor", None, None
     if lt == "slave":
         return "contato", kind.get("state", "NO"), "kindInformations"  # NO ou NC
 
@@ -110,6 +128,7 @@ def ler_circuito(caminho):
             "origem_estado": origem,
             "nome": info.get("label", ""),
             "bornes": d["bornes"],          # uuid do borne -> nome (A1, 13...)
+            "geo": d["geo"],
             "vinculos": [l.attrib["uuid"] for l in e.iter("link_uuid")],
             "tipo_contato": d["kind"].get("type", "simple"),  # simple, delayOn, delayOff
             "info": info,
@@ -143,11 +162,14 @@ class Simulador:
                          for u in self.energizada if self.e_temporizador(u)}
         self.t_ligada = {u: 0.0 for u in self.energizada}            # há quanto tempo energizada
         self.t_desligada = {u: float("inf") for u in self.energizada} # há quanto tempo desligada
+        # Proteções: disjuntor começa ligado; térmico começa sem disparo
+        self.disj_ligado = {u: True for u, e in elementos.items() if e["papel"] == "disjuntor"}
+        self.disparado = {u: False for u, e in elementos.items() if e["papel"] == "termico"}
 
     def e_temporizador(self, bobina):
         """Uma bobina é temporizador se algum contato dela for retardado."""
         return any(e["papel"] == "contato" and bobina in e["vinculos"]
-                   and e["tipo_contato"] != "simple"
+                   and e["tipo_contato"] in ("delayOn", "delayOff")
                    for e in self.el.values())
 
     # --- estado de cada chave/contato ---------------------------
@@ -156,14 +178,22 @@ class Simulador:
         if e["papel"] == "botoeira":
             atuado = self.pressionado[uuid]
         elif e["papel"] == "contato":
-            atuado = any(self.contato_atuado(e["tipo_contato"], m)
-                         if m in self.energizada else self.pressionado.get(m, False)
-                         for m in e["vinculos"])
+            atuado = any(self.mestre_atuado(e["tipo_contato"], m) for m in e["vinculos"])
         else:
             return False
         if e["estado_normal"] is None:     # botoeira de tipo indefinido: fica aberta
             return False
         return atuado if e["estado_normal"] == "NO" else not atuado
+
+    def mestre_atuado(self, tipo, mestre):
+        """O contato está atuado? Depende do tipo de elemento ao qual ele está vinculado."""
+        if mestre in self.energizada:
+            return self.contato_atuado(tipo, mestre)
+        if mestre in self.disj_ligado:      # auxiliar de disjuntor: atua com ele ligado
+            return self.disj_ligado[mestre]
+        if mestre in self.disparado:        # auxiliar de térmico: atua no disparo
+            return self.disparado[mestre]
+        return self.pressionado.get(mestre, False)
 
     def contato_atuado(self, tipo, bobina):
         ligada = self.energizada[bobina]
@@ -174,16 +204,44 @@ class Simulador:
             return ligada or self.t_desligada[bobina] < T - 1e-9
         return ligada             # contato comum
 
-    # --- quais bornes estão "vivos" a partir de L ou de N --------
-    def alcancaveis(self, nome_origem):
+    # --- polos: pares de bornes que uma chave liga entre si --------
+    def polos(self, u):
+        """Um contato de 2 bornes tem 1 polo. Em contatos de potência, disjuntores e
+        térmicos, cada polo é o par de bornes alinhados verticalmente no símbolo."""
+        bornes = list(self.el[u]["bornes"])
+        if len(bornes) == 2:
+            return [tuple(bornes)]
+        colunas = defaultdict(list)
+        for t in bornes:
+            x, y = self.el[u]["geo"][t]
+            colunas[round(x)].append((y, t))
+        return [(c[0][1], c[-1][1]) for c in
+                (sorted(v) for v in colunas.values()) if len(c) == 2]
+
+    def conduz(self, u):
+        papel = self.el[u]["papel"]
+        if papel in ("botoeira", "contato"):
+            return self.fechado(u)
+        if papel == "disjuntor":
+            return self.disj_ligado[u]
+        if papel == "termico":              # polos de força do térmico não abrem
+            return True
+        return False
+
+    def grafo(self):
         viz = defaultdict(set)
         for a, b in self.fios:                      # fios sempre conduzem
             viz[a].add(b); viz[b].add(a)
-        for u, e in self.el.items():                # chaves fechadas conduzem
-            if e["papel"] in ("botoeira", "contato") and self.fechado(u):
-                t1, t2 = list(e["bornes"])
-                viz[(u, t1)].add((u, t2)); viz[(u, t2)].add((u, t1))
-        origem = [(u, t) for u, e in self.el.items() if e["papel"] == "fonte"
+        for u in self.el:                           # chaves fechadas conduzem
+            if self.conduz(u):
+                for t1, t2 in self.polos(u):
+                    viz[(u, t1)].add((u, t2)); viz[(u, t2)].add((u, t1))
+        return viz
+
+    # --- quais bornes estão "vivos" a partir de uma origem ----------
+    def alcancaveis(self, nome_origem, papel_fonte="fonte", viz=None):
+        viz = viz if viz is not None else self.grafo()
+        origem = [(u, t) for u, e in self.el.items() if e["papel"] == papel_fonte
                   for t, n in e["bornes"].items() if n == nome_origem]
         vistos, fila = set(origem), deque(origem)
         while fila:
@@ -192,10 +250,40 @@ class Simulador:
                 vistos.add(m); fila.append(m)
         return vistos
 
+    # --- circuito de força ---------------------------------------
+    def forca(self):
+        """Estado de cada motor e avisos de curto-circuito."""
+        viz = self.grafo()
+        fases = {f: self.alcancaveis(f, "fonte3f", viz) for f in ("L1", "L2", "L3")}
+        avisos = []
+        for a, b in (("L1", "L2"), ("L2", "L3"), ("L1", "L3")):
+            if fases[a] & fases[b]:
+                avisos.append(f"CURTO-CIRCUITO {a}-{b}")
+        motores = []
+        for u, e in self.el.items():
+            if e["papel"] != "motor":
+                continue
+            # bornes na ordem do símbolo (U, V, W) e a fase que chega em cada um
+            ordem = sorted(e["bornes"], key=lambda t: e["geo"][t])
+            chegam = [[f for f in fases if (u, t) in fases[f]] for t in ordem]
+            recebidas = [c[0] for c in chegam if len(c) == 1]
+            nome = e["nome"] or "motor"
+            if len(recebidas) == 3 and len(set(recebidas)) == 3:
+                i = recebidas.index("L1")
+                seq = recebidas[i:] + recebidas[:i]
+                sentido = "horário" if seq == ["L1", "L2", "L3"] else "anti-horário"
+                motores.append(f"{nome}: GIRANDO ({sentido})")
+            elif recebidas:
+                motores.append(f"{nome}: FALTA DE FASE ({', '.join(sorted(set(recebidas)))})")
+            else:
+                motores.append(f"{nome}: parado")
+        return motores, avisos
+
     # --- resolve até estabilizar ---------------------------------
     def resolver(self, max_iter=50):
         for _ in range(max_iter):
-            vL, vN = self.alcancaveis("L"), self.alcancaveis("N")
+            viz = self.grafo()
+            vL, vN = self.alcancaveis("L", viz=viz), self.alcancaveis("N", viz=viz)
             mudou = False
             for u in self.energizada:
                 a, b = [(u, t) for t in self.el[u]["bornes"]]
@@ -219,9 +307,18 @@ class Simulador:
         raise KeyError(f"Botoeira '{nome}' não encontrada")
 
     def estado(self):
-        return ", ".join(
+        txt = ", ".join(
             f"{self.el[u]['nome']}={'ENERGIZADA' if v else 'desligada'}"
             for u, v in self.energizada.items())
+        motores, avisos = self.forca()
+        if motores:
+            txt += " | " + ", ".join(motores)
+        viz = self.grafo()
+        if self.alcancaveis("L", viz=viz) & self.alcancaveis("N", viz=viz):
+            avisos.append("CURTO-CIRCUITO L-N no comando")
+        if avisos:
+            txt += " | ATENÇÃO: " + ", ".join(avisos)
+        return txt
 
     def acao(self, nome, pressionar):
         self.pressionado[self.uuid_de(nome)] = pressionar
@@ -246,6 +343,24 @@ class Simulador:
                 print(f"  t={self.relogio:5.1f}s           -> {atual}   [{situacao}]")
                 anterior = atual
         print(f"  t={self.relogio:5.1f}s (fim)      -> {self.estado()}")
+
+    def protecao(self, nome):
+        """Liga/desliga um disjuntor ou provoca/rearma a sobrecarga de um térmico."""
+        for u, e in self.el.items():
+            if e["nome"].lower() != nome.lower():
+                continue
+            if u in self.disj_ligado:
+                self.disj_ligado[u] = not self.disj_ligado[u]
+                acao = "liga     " if self.disj_ligado[u] else "desliga  "
+            elif u in self.disparado:
+                self.disparado[u] = not self.disparado[u]
+                acao = "SOBRECARGA" if self.disparado[u] else "rearma   "
+            else:
+                continue
+            situacao = self.resolver()
+            print(f"  t={self.relogio:5.1f}s {acao} {e['nome']:<4} -> {self.estado()}   [{situacao}]")
+            return True
+        return False
 
     def ajustar_tempo(self, nome, segundos):
         for u in self.t_ajuste:
@@ -279,6 +394,8 @@ def main():
         extra = f" ({e['estado_normal']})" if e["estado_normal"] else ""
         if e["papel"] == "botoeira" and e["origem_estado"] not in (None, "bornes"):
             extra += f"  [tipo deduzido pelo {e['origem_estado']}]"
+        if e["papel"] == "contato" and e["tipo_contato"] == "power":
+            extra += ", potência"
         print(f"  {e['papel']:<9} {e['nome'] or '-'}{extra}")
     print(f"Fios: {len(fios)}")
     sem_nome = [e for e in elementos.values()
@@ -301,6 +418,12 @@ def main():
     if soltos:
         print(f"ATENÇÃO: {len(soltos)} contato(s) sem vínculo com bobina. "
               "Eles nunca vão atuar.")
+    for u, e in elementos.items():
+        if e["papel"] in ("disjuntor", "termico"):
+            aux = [c for c in elementos.values() if u in c["vinculos"]]
+            desc = ", ".join(f"{c['estado_normal']}" for c in aux) or "nenhum"
+            print(f"{'Disjuntor' if e['papel'] == 'disjuntor' else 'Relé térmico'} "
+                  f"{e['nome'] or '-'}: contatos auxiliares vinculados: {desc}")
 
     sim = Simulador(elementos, fios)
     nomes_tipo = {"delayOn": "retardo na energização",
@@ -319,6 +442,8 @@ Comandos:
   -S1         solta
   t 5         avança 5 segundos
   tempo KT1 3 ajusta o temporizador KT1 para 3 s
+  Q1          liga/desliga o disjuntor Q1
+  F1          provoca/rearma sobrecarga no relé térmico F1
   sair        encerra
 """)
     while True:
@@ -340,6 +465,8 @@ Comandos:
                 sim.acao(cmd[1:], True)
             elif cmd[0] == "-":
                 sim.acao(cmd[1:], False)
+            elif sim.protecao(cmd):
+                pass
             else:
                 sim.acao(cmd, True)
                 sim.acao(cmd, False)
