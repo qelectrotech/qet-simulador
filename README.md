@@ -46,8 +46,13 @@ Comandos / *Commands*: `S1` pulso / *pulse* · `+S1` mantém / *hold* · `-S1` s
 
 1. **Vincule cada contato à sua bobina** pela referência cruzada do QElectroTech
    (texto digitado não vale). / *Link each contact to its coil via cross-reference.*
-2. **Botoeiras:** numeração IEC define o tipo: 13–14 = NA, 21–22 = NF.
-   / *Push buttons: IEC terminal numbers define type: x3–x4 = NO, x1–x2 = NC.*
+2. **Botoeiras:** o tipo NA/NF é deduzido, em ordem, pela numeração IEC dos bornes
+   (13–14 = NA, 21–22 = NF), pelo nome do arquivo do símbolo (`_no`, `_nf`...) e pelo nome do
+   elemento na biblioteca. Se nada servir, o simulador avisa. Botões de pressão "mestres"
+   (`poussoir`, tipo `commutator`) também são aceitos, e contatos vinculados a eles seguem o botão.
+   / *Push-button NO/NC type is inferred from IEC terminal numbers, then the symbol file name,
+   then the element name; a warning is shown if none works. Master push buttons (`commutator`)
+   are supported, and contacts linked to them follow the button.*
 3. **Dê nome a todas as botoeiras** (S0, S1...). / *Name every push button.*
 4. **Temporizadores:** o tipo vem do contato (`delayOn` / `delayOff`). O QElectroTech não tem campo de
    tempo: o padrão é 5 s, ou escreva o valor (ex.: `5s`) em um campo de texto da bobina.

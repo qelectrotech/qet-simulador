@@ -31,31 +31,63 @@ def ler_definicoes(raiz):
                 kind[k.attrib.get("name")] = (k.text or "").strip()
         bornes = {t.attrib["uuid"]: t.attrib.get("name", "")
                   for t in d.iter("terminal")}
+        nomes = [(n.text or "").strip() for n in d.iter("name")]  # nome em cada idioma
         defs[el.attrib["name"]] = {
             "link_type": d.attrib.get("link_type", "simple"),
             "kind": kind,
             "bornes": bornes,
+            "nomes": nomes,
         }
     return defs
 
 
-def classificar(nome_arquivo, definicao):
-    """Decide o papel do elemento no simulador."""
-    lt, kind = definicao["link_type"], definicao["kind"]
-    nomes = set(definicao["bornes"].values())
-    if {"L", "N"} <= nomes:
-        return "fonte", None
-    if lt == "master" and kind.get("type") == "coil":
-        return "bobina", None
-    if lt == "slave":
-        return "contato", kind.get("state", "NO")       # NO ou NC
-    # Botoeira: deduz NA/NF pela numeração IEC (x3-x4 = NA, x1-x2 = NF)
-    finais = {n[-1:] for n in nomes if n}
+def tipo_botoeira(nome_arquivo, definicao):
+    """Decide se uma botoeira é NA (NO) ou NF (NC). Tenta, em ordem:
+    1. numeração IEC dos bornes (x3-x4 = NA, x1-x2 = NF);
+    2. nome do arquivo do símbolo (ex.: foot_no.elmt, poussoir_nf.elmt);
+    3. nome do elemento na biblioteca, em qualquer idioma (ex.: "Botão de pressão (NA)").
+    Devolve (estado, origem) ou (None, None) se não for possível decidir."""
+    finais = {n[-1:] for n in definicao["bornes"].values() if n}
     if finais == {"3", "4"}:
-        return "botoeira", "NO"
+        return "NO", "bornes"
     if finais == {"1", "2"}:
-        return "botoeira", "NC"
-    return "desconhecido", None
+        return "NC", "bornes"
+
+    partes = set(re.split(r"[^a-z]+", nome_arquivo.lower().rsplit(".", 1)[0]))
+    no, nc = bool(partes & {"no", "na"}), bool(partes & {"nc", "nf"})
+    if no != nc:
+        return ("NO" if no else "NC"), "nome do arquivo"
+
+    texto = " ".join(definicao["nomes"])
+    no = bool(re.search(r"\b(NO|NA)\b", texto))
+    nc = bool(re.search(r"\b(NC|NF)\b", texto))
+    if no != nc:
+        return ("NO" if no else "NC"), "nome do elemento"
+    return None, None
+
+
+def classificar(tipo, definicao):
+    """Decide o papel do elemento no simulador. Devolve (papel, estado, origem)."""
+    lt, kind = definicao["link_type"], definicao["kind"]
+    nomes_bornes = set(definicao["bornes"].values())
+    if {"L", "N"} <= nomes_bornes:
+        return "fonte", None, None
+    if lt == "master" and kind.get("type") == "coil":
+        return "bobina", None, None
+    if lt == "slave":
+        return "contato", kind.get("state", "NO"), "kindInformations"  # NO ou NC
+
+    # Botoeira: elemento de 2 bornes, "simple" ou mestre do tipo "commutator"
+    # (os botões de pressão da biblioteca do QElectroTech são desse tipo)
+    if len(definicao["bornes"]) == 2 and (lt == "simple"
+                                          or kind.get("type") == "commutator"):
+        arquivo = tipo.split("/")[-1]
+        estado, origem = tipo_botoeira(arquivo, definicao)
+        if estado:
+            return "botoeira", estado, origem
+        if kind.get("type") == "commutator" or "push_button" in tipo:
+            return "botoeira", None, None      # é botoeira, mas NA/NF indefinido
+    return "desconhecido", None, None
 
 
 def ler_circuito(caminho):
@@ -71,10 +103,11 @@ def ler_circuito(caminho):
         ei = e.find("elementInformations")
         if ei is not None:
             info = {i.attrib.get("name"): (i.text or "").strip() for i in ei}
-        papel, estado = classificar(arquivo, d)
+        papel, estado, origem = classificar(e.attrib["type"], d)
         elementos[e.attrib["uuid"]] = {
             "papel": papel,
             "estado_normal": estado,
+            "origem_estado": origem,
             "nome": info.get("label", ""),
             "bornes": d["bornes"],          # uuid do borne -> nome (A1, 13...)
             "vinculos": [l.attrib["uuid"] for l in e.iter("link_uuid")],
@@ -124,8 +157,11 @@ class Simulador:
             atuado = self.pressionado[uuid]
         elif e["papel"] == "contato":
             atuado = any(self.contato_atuado(e["tipo_contato"], m)
-                         for m in e["vinculos"] if m in self.energizada)
+                         if m in self.energizada else self.pressionado.get(m, False)
+                         for m in e["vinculos"])
         else:
+            return False
+        if e["estado_normal"] is None:     # botoeira de tipo indefinido: fica aberta
             return False
         return atuado if e["estado_normal"] == "NO" else not atuado
 
@@ -241,6 +277,8 @@ def main():
     print("Elementos encontrados:")
     for e in elementos.values():
         extra = f" ({e['estado_normal']})" if e["estado_normal"] else ""
+        if e["papel"] == "botoeira" and e["origem_estado"] not in (None, "bornes"):
+            extra += f"  [tipo deduzido pelo {e['origem_estado']}]"
         print(f"  {e['papel']:<9} {e['nome'] or '-'}{extra}")
     print(f"Fios: {len(fios)}")
     sem_nome = [e for e in elementos.values()
@@ -249,6 +287,15 @@ def main():
         print(f"\nATENÇÃO: {len(sem_nome)} botoeira(s) sem nome no desenho. "
               "Elas não podem ser acionadas. Dê nome a elas no QElectroTech.")
 
+    indefinidas = [e for e in elementos.values()
+                   if e["papel"] == "botoeira" and not e["estado_normal"]]
+    for e in indefinidas:
+        print(f"ATENÇÃO: não foi possível saber se a botoeira {e['nome'] or '(sem nome)'} "
+              "é NA ou NF. Numere os bornes (13-14 = NA, 21-22 = NF).")
+    desconhecidos = [e for e in elementos.values() if e["papel"] == "desconhecido"]
+    if desconhecidos:
+        print(f"Aviso: {len(desconhecidos)} elemento(s) ignorado(s) pelo simulador: "
+              + ", ".join(sorted({e['nome'] or '(sem nome)' for e in desconhecidos})))
     soltos = [e for e in elementos.values()
               if e["papel"] == "contato" and not e["vinculos"]]
     if soltos:

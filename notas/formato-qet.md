@@ -77,3 +77,15 @@ Os `terminal*` são os uuid dos bornes da definição (não os `id` numéricos d
    O simulador avisa contatos sem vínculo.
 6. **Editar o .qet com o QElectroTech aberto:** ao salvar, o programa grava por cima das alterações
    feitas fora dele.
+
+## Botoeiras na biblioteca do QElectroTech
+
+- Os botões de pressão "de verdade" (`20_push_buttons/poussoir.elmt`, `poussoir_nf.elmt`, `au.elmt`...)
+  são **mestres** (`link_type="master"`) do tipo `commutator`, com bornes **sem número** e **sem**
+  `state` no `kindInformations`. NA/NF só aparece no nome ("Botão de pressão (NA)").
+- `foot_no.elmt` / `foot_nc.elmt` são **interruptores de pedal**: elementos `simple` com bornes
+  numerados (13-14 / 21-22).
+- Ordem usada pelo simulador (sugestão de Laurent/scorpio810 no fórum): numeração dos bornes →
+  nome do arquivo → nome do elemento → aviso.
+- Outra inconsistência da biblioteca: `arret-urgence_no.elmt` diz "NF" em francês e "NA" em
+  português; o simulador segue o nome do arquivo (`_no`).
