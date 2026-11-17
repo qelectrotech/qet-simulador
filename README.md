@@ -35,13 +35,21 @@ Exemplos incluídos / *Included examples* (`circuitos-qet/`): partida direta, re
 partida temporizada, estrela-triângulo (comando), partida direta e reversão com força / *DOL,
 reversing, timed start, star-delta (control), DOL and reversing with power circuit*.
 
-## Versão gráfica (em desenvolvimento) / *Graphical version (in progress)*
+## Versão gráfica / *Graphical version*
 
-Abra `web/index.html` no navegador (duplo clique) e escolha um arquivo `.qet`. Funciona sem internet:
-nada é enviado para fora do seu computador. Por enquanto só **mostra** o diagrama; a simulação
-gráfica vem a seguir.
-*Open `web/index.html` in a browser and pick a `.qet` file. Works offline. For now it only displays
-the diagram; graphical simulation comes next.*
+Abra `web/index.html` no navegador (duplo clique) e escolha um arquivo `.qet`. O diagrama aparece como
+no QElectroTech e pode ser simulado: **clique e segure** uma botoeira para pressioná-la (**Shift+clique**
+mantém pressionada), clique no **disjuntor** para ligar/desligar e no **relé térmico** para simular
+sobrecarga. Fios energizados ficam vermelhos (fase) ou azuis (neutro), bobinas energizadas e contatos
+atuados ficam realçados, o motor mostra o sentido de giro e os temporizadores correm em tempo real.
+Funciona sem internet; `index.html` e `motor.js` precisam ficar na mesma pasta.
+
+*Open `web/index.html` in a browser and pick a `.qet` file. Press and hold push buttons (Shift+click
+latches), click the breaker or the thermal relay. Works offline; keep `index.html` and `motor.js`
+together.*
+
+**Testes de paridade / *Parity tests*:** `python tests/paridade.py` e `node tests/paridade.js`
+(requer `npm i @xmldom/xmldom`) devem produzir a mesma saída. / *must produce identical output.*
 
 ## Como usar / How to use
 

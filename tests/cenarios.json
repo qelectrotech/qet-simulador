@@ -1,0 +1,8 @@
+{
+  "partida_direta.qet":        [["p","S1"],["p","S0"]],
+  "reversao.qet":              [["p","S1"],["p","S2"],["p","S0"],["p","S2"],["p","S1"],["p","S0"]],
+  "partida_temporizada.qet":   [["p","S1"],["t",3],["t",2],["p","S0"],["t",1]],
+  "estrela_triangulo.qet":     [["p","S1"],["t",4.9],["t",0.2],["p","S0"],["t",10]],
+  "partida_direta_forca.qet":  [["p","S1"],["x","F1"],["x","F1"],["p","S1"],["x","Q1"],["x","Q1"],["p","S0"]],
+  "reversao_forca.qet":        [["p","S1"],["p","S2"],["p","S0"],["p","S2"],["x","F1"],["x","F1"],["p","S1"]]
+}

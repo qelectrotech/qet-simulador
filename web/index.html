@@ -12,7 +12,27 @@
            padding: 10px 16px; background: #fff; border-bottom: 1px solid var(--borda); }
   header h1 { font-size: 16px; margin: 0 12px 0 0; }
   header .info { font-size: 13px; color: #555; }
-  #area { padding: 16px; }
+  #area { padding: 16px; display: flex; gap: 16px; align-items: flex-start; }
+  #painel { width: 300px; flex: none; background: #fff; border: 1px solid var(--borda);
+            border-radius: 6px; padding: 12px; font-size: 13px; display: none; }
+  #painel h2 { font-size: 13px; margin: 12px 0 6px; text-transform: uppercase; color: #666; }
+  #painel h2:first-child { margin-top: 0; }
+  #estado div { padding: 2px 0; }
+  .ok { color: #1a7f37; } .alerta { color: #b42318; font-weight: 600; }
+  #log { max-height: 260px; overflow: auto; font-family: ui-monospace, monospace; font-size: 11.5px;
+         background: #f7f7f7; padding: 6px; border-radius: 4px; }
+  #log div { padding: 1px 0; border-bottom: 1px dotted #ddd; }
+  .temp { display: flex; align-items: center; gap: 6px; margin: 4px 0; }
+  .temp input { width: 52px; }
+  .barra { flex: 1; height: 6px; background: #eee; border-radius: 3px; overflow: hidden; }
+  .barra i { display: block; height: 100%; background: #2a6fdb; width: 0; }
+  header button { padding: 4px 10px; }
+  .clicavel { cursor: pointer; }
+  .clicavel:hover .realce { stroke: #2a6fdb; stroke-width: 1; stroke-dasharray: 2 2; }
+  .realce { pointer-events: none; }
+  .giro { font-size: 22px; font-weight: bold; }
+  @keyframes horario { to { transform: rotate(360deg); } }
+  @keyframes antihorario { to { transform: rotate(-360deg); } }
   #vazio { margin: 40px auto; max-width: 520px; padding: 32px; text-align: center;
            border: 2px dashed var(--borda); border-radius: 8px; background: #fff; color: #555; }
   #vazio.arrastando { border-color: #2a6fdb; color: #2a6fdb; }
@@ -27,6 +47,9 @@
   <label>Abrir diagrama do QElectroTech (.qet):
     <input type="file" id="arquivo" accept=".qet">
   </label>
+  <button id="pausa" disabled>⏸ Pausar tempo</button>
+  <button id="reiniciar" disabled>↺ Reiniciar</button>
+  <span class="info" id="relogio"></span>
   <span class="info" id="info"></span>
 </header>
 <div id="avisos"></div>
@@ -34,13 +57,22 @@
   <div id="vazio">Escolha um arquivo <b>.qet</b> acima ou arraste-o para cá.<br>
     Tudo roda no seu navegador: nada é enviado para a internet.</div>
   <svg id="folha" xmlns="http://www.w3.org/2000/svg"></svg>
+  <aside id="painel">
+    <h2>Como usar</h2>
+    <div>Clique e segure uma <b>botoeira</b> para pressioná-la. <b>Shift+clique</b> mantém pressionada.
+      Clique no <b>disjuntor</b> para ligar/desligar e no <b>relé térmico</b> para simular sobrecarga.</div>
+    <h2>Estado</h2><div id="estado"></div>
+    <div id="temporizadores"></div>
+    <h2>Eventos</h2><div id="log"></div>
+  </aside>
 </div>
+<script src="motor.js"></script>
 
 <script>
 "use strict";
 /* ============================================================
-   qet-simulador · Passo 1: visualizador de diagramas .qet
-   Lê o arquivo do QElectroTech e desenha a folha em SVG.
+   qet-simulador · visualizador e simulador de diagramas .qet
+   Lê o arquivo do QElectroTech, desenha a folha em SVG e simula o circuito (motor.js).
    Sem dependências externas: funciona sem internet.
    ============================================================ */
 
@@ -244,7 +276,7 @@ function rotuloMestre(el, elementos) {
 }
 
 function desenharElemento(el, svg, elementos) {
-  const g = svgEl("g", { class: "elemento",
+  const g = svgEl("g", { class: "elemento", "data-uuid": el.no.getAttribute("uuid"),
     transform: `translate(${el.x} ${el.y}) rotate(${90 * el.orientacao})` }, svg);
   if (!el.def) {
     svgEl("rect", { x: -10, y: -10, width: 20, height: 20, fill: "#fdd", stroke: "red" }, g);
@@ -411,10 +443,12 @@ function desenhar(doc) {
     desenharElemento(el, gElem, elementos);
   }
   const caminhos = fios.map(f => caminhoFio(f, elementos));
-  for (const pts of caminhos) {
-    if (!pts) continue;
-    svgEl("polyline", { points: pts.map(p => p.join(",")).join(" ") }, gFios);
-  }
+  VISTA.fios = [];
+  caminhos.forEach((pts, i) => {
+    if (!pts) return;
+    const linha = svgEl("polyline", { points: pts.map(p => p.join(",")).join(" ") }, gFios);
+    VISTA.fios.push({ linha, chave: fios[i].a[0] + "|" + fios[i].a[1] });
+  });
   for (const [x, y] of juncoes(fios, caminhos))
     svgEl("circle", { cx: x, cy: y, r: 1.8, fill: "black", stroke: "none" }, gFios);
   if (semDef) avisos.push(`${semDef} elemento(s) sem definição embutida no arquivo (desenhados como quadrado vermelho).`);
@@ -427,17 +461,184 @@ function desenhar(doc) {
   document.getElementById("avisos").textContent = avisos.join(" ");
   document.getElementById("info").textContent =
     `${Object.keys(elementos).length} elementos, ${fios.length} fios`;
+  VISTA.svg = svg;
+  return avisos;
 }
 
+/* ============================================================
+   Passo 2: simulação no desenho
+   ============================================================ */
+const VISTA = { svg: null, fios: [], doc: null, sim: null, grupos: {}, pausado: false, ultimo: "" };
+const COR = { fase: "#d62728", neutro: "#1f5fbf", morto: "black" };
+
+function log(msg, classe = "") {
+  const l = document.getElementById("log");
+  const d = document.createElement("div");
+  d.textContent = `t=${VISTA.sim.relogio.toFixed(1)}s  ${msg}`;
+  if (classe) d.className = classe;
+  l.prepend(d);
+}
+
+function prepararSimulacao(doc) {
+  const M = window.QetMotor;
+  const circuito = M.lerCircuito(doc);
+  const sim = new M.Simulador(circuito);
+  sim.resolver();
+  VISTA.sim = sim; VISTA.grupos = {}; VISTA.ultimo = "";
+  document.getElementById("log").innerHTML = "";
+  for (const g of VISTA.svg.querySelectorAll("g.elemento")) {
+    const u = g.getAttribute("data-uuid"), e = sim.el[u];
+    if (!e) continue;
+    // Retângulo de realce do tamanho do símbolo (cor muda com o estado)
+    const bb = g.getBBox();
+    const r = svgEl("rect", { class: "realce", x: bb.x - 2, y: bb.y - 2, width: bb.width + 4,
+                              height: bb.height + 4, rx: 3, fill: "none", stroke: "none" });
+    g.insertBefore(r, g.firstChild);
+    VISTA.grupos[u] = { g, r, bb };
+    // Elementos clicáveis: toda a área do símbolo recebe o clique, não só as linhas
+    if (["botoeira", "disjuntor", "termico"].includes(e.papel)) r.style.pointerEvents = "all";
+    if (e.papel === "botoeira") {
+      g.classList.add("clicavel");
+      g.addEventListener("pointerdown", ev => {
+        ev.preventDefault();
+        if (ev.shiftKey) { acionar(u, !sim.pressionado[u], true); return; }
+        g.setPointerCapture(ev.pointerId);
+        acionar(u, true);
+      });
+      const soltar = () => { if (sim.pressionado[u] && !g.dataset.travada) acionar(u, false); };
+      g.addEventListener("pointerup", soltar);
+      g.addEventListener("pointercancel", soltar);
+    } else if (e.papel === "disjuntor" || e.papel === "termico") {
+      g.classList.add("clicavel");
+      g.addEventListener("click", () => {
+        const res = sim.protecao(u);
+        const txt = e.papel === "disjuntor"
+          ? `${e.nome} ${sim.disj_ligado[u] ? "ligado" : "desligado"}`
+          : `${e.nome} ${sim.disparado[u] ? "SOBRECARGA (disparou)" : "rearmado"}`;
+        log(txt);
+        depois(res);
+      });
+    } else if (e.papel === "motor") {
+      const t = svgEl("text", { class: "giro", x: bb.x + bb.width + 6, y: bb.y + bb.height / 2 + 8,
+                                fill: COR.fase }, g);
+      VISTA.grupos[u].giro = t;
+    }
+  }
+  // Temporizadores: tempo ajustável
+  const tp = document.getElementById("temporizadores");
+  tp.innerHTML = "";
+  const temps = Object.keys(sim.t_ajuste);
+  if (temps.length) {
+    const h = document.createElement("h2"); h.textContent = "Temporizadores"; tp.appendChild(h);
+    for (const u of temps) {
+      const d = document.createElement("div"); d.className = "temp";
+      d.innerHTML = `<b>${sim.el[u].nome}</b><input type="number" min="0.1" step="0.1"
+        value="${sim.t_ajuste[u]}"> s <span class="barra"><i></i></span>`;
+      d.querySelector("input").addEventListener("change", ev => {
+        const v = parseFloat(ev.target.value);
+        if (v > 0) { sim.t_ajuste[u] = v; log(`${sim.el[u].nome} ajustado para ${v} s`); }
+      });
+      VISTA.grupos[u].barra = d.querySelector("i");
+      tp.appendChild(d);
+    }
+  }
+  document.getElementById("painel").style.display = "block";
+  document.getElementById("pausa").disabled = false;
+  document.getElementById("reiniciar").disabled = false;
+  atualizar();
+}
+
+function acionar(u, valor, travar = false) {
+  const sim = VISTA.sim, g = VISTA.grupos[u].g;
+  if (travar) g.dataset.travada = valor ? "1" : "";
+  if (!valor) delete g.dataset.travada;
+  const res = sim.pressionar(u, valor);
+  log(`${valor ? "pressiona" : "solta"} ${sim.el[u].nome}${travar && valor ? " (mantida)" : ""}`);
+  depois(res);
+}
+
+function depois(res) {
+  if (res && res.situacao === "OSCILANDO") log("circuito OSCILANDO (não estabiliza)", "alerta");
+  for (const m of (res && res.disparos) || []) log(m, "alerta");
+  atualizar();
+}
+
+function atualizar() {
+  const sim = VISTA.sim;
+  if (!sim) return;
+  const en = sim.energia();
+  for (const f of VISTA.fios) {
+    const viva = en.fase.has(f.chave), neutro = en.neutro.has(f.chave);
+    f.linha.setAttribute("stroke", viva ? COR.fase : neutro ? COR.neutro : COR.morto);
+    f.linha.setAttribute("stroke-width", viva || neutro ? 1.8 : 1);
+  }
+  for (const [u, v] of Object.entries(VISTA.grupos)) {
+    const e = sim.el[u];
+    let cor = "none";
+    if (e.papel === "bobina" && sim.energizada[u]) cor = "rgba(214,39,40,.22)";
+    if ((e.papel === "contato" || e.papel === "botoeira") && sim.atuado(u)) cor = "rgba(26,127,55,.22)";
+    if (e.papel === "disjuntor" && !sim.disj_ligado[u]) cor = "rgba(120,120,120,.30)";
+    if (e.papel === "termico" && sim.disparado[u]) cor = "rgba(255,140,0,.35)";
+    if (e.papel === "motor") {
+      const m = en.motores[u];
+      cor = m && m.gira ? "rgba(214,39,40,.15)" : m && m.txt !== "parado" ? "rgba(255,140,0,.35)" : "none";
+      v.giro.textContent = m && m.gira ? (m.gira > 0 ? "↻" : "↺") : "";
+      v.giro.style.transformBox = "fill-box"; v.giro.style.transformOrigin = "center";
+      v.giro.style.animation = m && m.gira ? `${m.gira > 0 ? "horario" : "antihorario"} 1s linear infinite` : "";
+    }
+    v.r.setAttribute("fill", cor);
+    if (v.barra) {
+      const T = sim.t_ajuste[u], t = sim.energizada[u] ? Math.min(sim.t_ligada[u], T) : 0;
+      v.barra.style.width = `${100 * t / T}%`;
+    }
+  }
+  // painel de estado
+  const linhas = [];
+  for (const [u, v] of Object.entries(sim.energizada))
+    linhas.push(`<div class="${v ? "ok" : ""}">${sim.el[u].nome || "bobina"}: ${v ? "ENERGIZADA" : "desligada"}</div>`);
+  for (const [u, m] of Object.entries(en.motores))
+    linhas.push(`<div class="${m.gira ? "ok" : m.txt === "parado" ? "" : "alerta"}">${sim.el[u].nome || "motor"}: ${m.txt}</div>`);
+  const est = sim.estado();
+  if (est.includes("ATENÇÃO")) linhas.push(`<div class="alerta">${est.split("ATENÇÃO: ")[1]}</div>`);
+  document.getElementById("estado").innerHTML = linhas.join("");
+  if (est !== VISTA.ultimo && VISTA.ultimo) log(est.replace(/\| ATENÇÃO.*/, ""));
+  VISTA.ultimo = est;
+  document.getElementById("relogio").textContent = `tempo: ${sim.relogio.toFixed(1)} s`;
+}
+
+// Relógio: o tempo da simulação corre em tempo real (passos de 0,1 s)
+setInterval(() => {
+  if (!VISTA.sim || VISTA.pausado) return;
+  const res = VISTA.sim.passo(0.1);
+  if (res.disparos.length || VISTA.sim.estado() !== VISTA.ultimo || Object.keys(VISTA.sim.t_ajuste).length)
+    depois(res);
+  else document.getElementById("relogio").textContent = `tempo: ${VISTA.sim.relogio.toFixed(1)} s`;
+}, 100);
+
+document.getElementById("pausa").addEventListener("click", ev => {
+  VISTA.pausado = !VISTA.pausado;
+  ev.target.textContent = VISTA.pausado ? "▶ Continuar tempo" : "⏸ Pausar tempo";
+});
+document.getElementById("reiniciar").addEventListener("click", () => {
+  if (VISTA.doc) abrirDoc(VISTA.doc, document.title);
+});
+
 /* ---------- abrir arquivo ---------- */
+function abrirDoc(doc, titulo) {
+  VISTA.doc = doc;
+  const avisos = desenhar(doc);
+  prepararSimulacao(doc);
+  document.title = titulo;
+  return avisos;
+}
+
 function abrirTexto(texto, nome) {
   const doc = new DOMParser().parseFromString(texto, "application/xml");
   if (doc.querySelector("parsererror") || !doc.querySelector("project > diagram")) {
     document.getElementById("avisos").textContent = `Não consegui ler "${nome}" como diagrama do QElectroTech.`;
     return;
   }
-  desenhar(doc);
-  document.title = `${nome} · qet-simulador`;
+  abrirDoc(doc, `${nome} · qet-simulador`);
 }
 
 function abrirArquivo(f) {
