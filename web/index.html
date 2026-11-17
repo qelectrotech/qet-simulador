@@ -272,37 +272,128 @@ function desenharElemento(el, svg, elementos) {
   return g;
 }
 
+/* Roteamento automático: tradução fiel de Conductor::generateConductorPath (QElectroTech) */
+const GRADE = 10;
+function estender([x, y], o, ext = 10) {
+  const r10 = v => Math.round(v / 10) * 10;
+  if (o === "n") return [x, r10(y - ext)];
+  if (o === "e") return [r10(x + ext), y];
+  if (o === "s") return [x, r10(y + ext)];
+  if (o === "w") return [r10(x - ext), y];
+  return [x, y];
+}
+function naGrade(v, g) { v = Math.round(v); while (((v % g) + g) % g) v--; return v; }
+
+function caminhoAutomatico(p1, o1, p2, o2) {
+  const n1 = estender(p1, o1), n2 = estender(p2, o2);
+  let dep, arr, dep0, arr0, od, oa;
+  if (n1[0] <= n2[0]) { dep = n1; arr = n2; dep0 = p1; arr0 = p2; od = o1; oa = o2; }
+  else                { dep = n2; arr = n1; dep0 = p2; arr0 = p1; od = o2; oa = o1; }
+  const pts = [dep0, dep];
+  if (dep[1] < arr[1]) {                      // trajeto descendente
+    if ((od === "n" && (oa === "s" || oa === "w")) || (od === "e" && oa === "w")) {
+      if (Math.round(dep[0]) !== Math.round(arr[0])) {
+        const x = naGrade((Math.round(dep[0] + arr[0])) / 2, GRADE);
+        pts.push([x, dep[1]], [x, arr[1]]);
+      }
+    } else if ((od === "s" && (oa === "n" || oa === "e")) || (od === "w" && oa === "e")) {
+      if (Math.round(dep[1]) !== Math.round(arr[1])) {
+        const y = naGrade((Math.round(dep[1] + arr[1])) / 2, GRADE);
+        pts.push([dep[0], y], [arr[0], y]);
+      }
+    } else if ((od === "n" || od === "e") && (oa === "n" || oa === "e")) {
+      pts.push([arr[0], dep[1]]);
+    } else {
+      pts.push([dep[0], arr[1]]);
+    }
+  } else {                                    // trajeto ascendente
+    if ((od === "w" && (oa === "e" || oa === "s")) || (od === "n" && oa === "s")) {
+      if (Math.round(dep[1]) !== Math.round(arr[1])) {
+        const y = naGrade((Math.round(dep[1] + arr[1])) / 2, GRADE);
+        pts.push([dep[0], y], [arr[0], y]);
+      }
+    } else if ((od === "e" && (oa === "w" || oa === "n")) || (od === "s" && oa === "n")) {
+      if (Math.round(dep[0]) !== Math.round(arr[0])) {
+        const x = naGrade((Math.round(dep[0] + arr[0])) / 2, GRADE);
+        pts.push([x, dep[1]], [x, arr[1]]);
+      }
+    } else if ((od === "w" || od === "n") && (oa === "w" || oa === "n")) {
+      pts.push([dep[0], arr[1]]);
+    } else {
+      pts.push([arr[0], dep[1]]);
+    }
+  }
+  pts.push(arr, arr0);
+  return n1[0] > n2[0] ? pts.reverse() : pts;
+}
+
+function limparPontos(pts) {
+  const r = [];
+  for (const p of pts) {
+    const u = r[r.length - 1];
+    if (!u || u[0] !== p[0] || u[1] !== p[1]) r.push(p);
+  }
+  return r;
+}
+
 function caminhoFio(fio, elementos) {
   const ea = elementos[fio.a[0]], eb = elementos[fio.b[0]];
   if (!ea || !eb) return null;
   const p1 = pontoBorne(ea, fio.a[1]), p2 = pontoBorne(eb, fio.b[1]);
   if (!p1 || !p2) return null;
-  const pts = [p1];
   if (fio.segmentos.length) {
     // Caminho gravado pelo QElectroTech: segmentos a partir do borne 1
+    const pts = [p1];
     let [x, y] = p1;
     for (const s of fio.segmentos) {
       if (s.horizontal) x += s.comprimento; else y += s.comprimento;
       pts.push([x, y]);
     }
-  } else if (p1[0] !== p2[0] && p1[1] !== p2[1]) {
-    // Caminho automático (aproximação do QElectroTech): cada ponta sai na direção do seu borne
-    const vert = d => d === "n" || d === "s";
-    const v1 = vert(direcaoBorne(ea, fio.a[1])), v2 = vert(direcaoBorne(eb, fio.b[1]));
-    if (v1 && v2) {                       // os dois verticais: Z com trecho horizontal no meio
-      const my = (p1[1] + p2[1]) / 2;
-      pts.push([p1[0], my], [p2[0], my]);
-    } else if (!v1 && !v2) {              // os dois horizontais: Z com trecho vertical no meio
-      const mx = (p1[0] + p2[0]) / 2;
-      pts.push([mx, p1[1]], [mx, p2[1]]);
-    } else if (!v1 && v2) {               // sai na horizontal e chega na vertical: L
-      pts.push([p2[0], p1[1]]);
-    } else {                              // sai na vertical e chega na horizontal: L
-      pts.push([p1[0], p2[1]]);
-    }
+    return limparPontos(pts);
   }
-  pts.push(p2);
-  return pts;
+  return limparPontos(caminhoAutomatico(p1, direcaoBorne(ea, fio.a[1]), p2, direcaoBorne(eb, fio.b[1])));
+}
+
+/* Pontos de junção (como Conductor::junctions do QElectroTech): uma dobra de um fio
+   que fica sobre outro fio do mesmo potencial, se o outro não dobrar igual ali. */
+function dobras(pts) {
+  const lado = (a, b) => (b[0] > a[0] ? "e" : b[0] < a[0] ? "w" : b[1] > a[1] ? "s" : "n");
+  const r = [];
+  for (let i = 1; i < pts.length - 1; i++) {
+    const a = lado(pts[i], pts[i - 1]), b = lado(pts[i], pts[i + 1]);
+    const vert = d => d === "n" || d === "s";
+    if (vert(a) !== vert(b)) r.push({ p: pts[i], tipo: [a, b].sort().join("") });
+  }
+  return r;
+}
+function sobre(p, pts) {
+  for (let i = 0; i < pts.length - 1; i++) {
+    const [a, b] = [pts[i], pts[i + 1]];
+    if (a[0] === b[0] && p[0] === a[0] && p[1] >= Math.min(a[1], b[1]) && p[1] <= Math.max(a[1], b[1])) return true;
+    if (a[1] === b[1] && p[1] === a[1] && p[0] >= Math.min(a[0], b[0]) && p[0] <= Math.max(a[0], b[0])) return true;
+  }
+  return false;
+}
+function juncoes(fios, caminhos) {
+  // potencial: fios ligados entre si por bornes em comum
+  const pai = {};
+  const ach = k => { while (pai[k] !== undefined && pai[k] !== k) k = pai[k]; return k; };
+  const chave = ([e, t]) => e + "|" + t;
+  for (const f of fios) {
+    const a = ach(chave(f.a)), b = ach(chave(f.b));
+    pai[a] = pai[a] ?? a; pai[b] = pai[b] ?? b; if (a !== b) pai[a] = b;
+  }
+  const pot = fios.map(f => ach(chave(f.a)));
+  const lista = [];
+  caminhos.forEach((c, i) => {
+    if (!c) return;
+    for (const d of dobras(c)) {
+      const ok = caminhos.some((o, j) => j !== i && o && pot[j] === pot[i] && sobre(d.p, o)
+        && !dobras(o).some(od => od.p[0] === d.p[0] && od.p[1] === d.p[1] && od.tipo === d.tipo));
+      if (ok) lista.push(d.p);
+    }
+  });
+  return lista;
 }
 
 function desenhar(doc) {
@@ -319,12 +410,13 @@ function desenhar(doc) {
     if (!el.def) semDef++;
     desenharElemento(el, gElem, elementos);
   }
-  for (const f of fios) {
-    const pts = caminhoFio(f, elementos);
+  const caminhos = fios.map(f => caminhoFio(f, elementos));
+  for (const pts of caminhos) {
     if (!pts) continue;
     svgEl("polyline", { points: pts.map(p => p.join(",")).join(" ") }, gFios);
-    // Ponto de junção nos bornes com mais de um fio fica para o passo da simulação
   }
+  for (const [x, y] of juncoes(fios, caminhos))
+    svgEl("circle", { cx: x, cy: y, r: 1.8, fill: "black", stroke: "none" }, gFios);
   if (semDef) avisos.push(`${semDef} elemento(s) sem definição embutida no arquivo (desenhados como quadrado vermelho).`);
   if (total > 1) avisos.push(`O projeto tem ${total} folhas; por enquanto só a primeira é mostrada.`);
   svg.setAttribute("viewBox", `-2 -2 ${largura + 4} ${altura + 4}`);
