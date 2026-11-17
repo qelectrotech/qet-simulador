@@ -31,8 +31,8 @@ Exemplo (reversão com intertravamento) / *Example (reversing starter with inter
 ```
 
 Exemplos incluídos / *Included examples* (`circuitos-qet/`): partida direta, reversão com intertravamento,
-partida temporizada, estrela-triângulo (comando) e partida direta com força / *DOL, reversing, timed
-start, star-delta (control), DOL with power circuit*.
+partida temporizada, estrela-triângulo (comando), partida direta e reversão com força / *DOL,
+reversing, timed start, star-delta (control), DOL and reversing with power circuit*.
 
 ## Como usar / How to use
 

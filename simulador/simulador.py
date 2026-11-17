@@ -268,7 +268,9 @@ class Simulador:
             chegam = [[f for f in fases if (u, t) in fases[f]] for t in ordem]
             recebidas = [c[0] for c in chegam if len(c) == 1]
             nome = e["nome"] or "motor"
-            if len(recebidas) == 3 and len(set(recebidas)) == 3:
+            if any(len(c) > 1 for c in chegam):
+                motores.append(f"{nome}: EM CURTO (duas fases no mesmo borne)")
+            elif len(recebidas) == 3 and len(set(recebidas)) == 3:
                 i = recebidas.index("L1")
                 seq = recebidas[i:] + recebidas[:i]
                 sentido = "horário" if seq == ["L1", "L2", "L3"] else "anti-horário"
