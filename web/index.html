@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>qet-simulador · visualizador</title>
+<style>
+  :root { --borda: #c9c9c9; --fundo: #f4f4f2; --texto: #222; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, sans-serif; color: var(--texto); background: var(--fundo); }
+  header { display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+           padding: 10px 16px; background: #fff; border-bottom: 1px solid var(--borda); }
+  header h1 { font-size: 16px; margin: 0 12px 0 0; }
+  header .info { font-size: 13px; color: #555; }
+  #area { padding: 16px; }
+  #vazio { margin: 40px auto; max-width: 520px; padding: 32px; text-align: center;
+           border: 2px dashed var(--borda); border-radius: 8px; background: #fff; color: #555; }
+  #vazio.arrastando { border-color: #2a6fdb; color: #2a6fdb; }
+  #folha { background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.15); display: none; }
+  #avisos { font-size: 13px; color: #8a4b00; padding: 0 16px; }
+  svg text { font-family: "Liberation Sans", Arial, sans-serif; }
+</style>
+</head>
+<body>
+<header>
+  <h1>qet-simulador</h1>
+  <label>Abrir diagrama do QElectroTech (.qet):
+    <input type="file" id="arquivo" accept=".qet">
+  </label>
+  <span class="info" id="info"></span>
+</header>
+<div id="avisos"></div>
+<div id="area">
+  <div id="vazio">Escolha um arquivo <b>.qet</b> acima ou arraste-o para cá.<br>
+    Tudo roda no seu navegador: nada é enviado para a internet.</div>
+  <svg id="folha" xmlns="http://www.w3.org/2000/svg"></svg>
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+   qet-simulador · Passo 1: visualizador de diagramas .qet
+   Lê o arquivo do QElectroTech e desenha a folha em SVG.
+   Sem dependências externas: funciona sem internet.
+   ============================================================ */
+
+const SVG = "http://www.w3.org/2000/svg";
+const num = (v, d = 0) => (v === null || v === undefined || v === "" ? d : parseFloat(v));
+
+function svgEl(tag, attrs = {}, pai = null) {
+  const e = document.createElementNS(SVG, tag);
+  for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+  if (pai) pai.appendChild(e);
+  return e;
+}
+
+/* ---------- estilo das primitivas do QElectroTech ---------- */
+const ESPESSURA = { none: 0, thin: 0.5, normal: 1, hight: 2, eleve: 4 };
+const TRACO = { dashed: "4 2", dotted: "1 2", dashdotted: "4 2 1 2" };
+
+function estilo(attr) {
+  const s = {};
+  (attr || "").split(";").forEach(p => {
+    const [k, v] = p.split(":");
+    if (k && v !== undefined) s[k.trim()] = v.trim();
+  });
+  const cor = s.color && s.color !== "none" ? s.color : "black";
+  const r = {
+    stroke: cor,
+    "stroke-width": ESPESSURA[s["line-weight"]] ?? 1,
+    fill: s.filling && s.filling !== "none" ? s.filling : "none",
+    "stroke-linecap": "square",
+  };
+  if (TRACO[s["line-style"]]) r["stroke-dasharray"] = TRACO[s["line-style"]];
+  return r;
+}
+
+function tamanhoFonte(font, padrao = 9) {
+  const partes = (font || "").split(",");
+  return partes.length > 1 && !isNaN(parseFloat(partes[1])) ? parseFloat(partes[1]) : padrao;
+}
+
+/* ---------- desenho de cada primitiva de um símbolo ---------- */
+function desenharPrimitiva(p, g) {
+  const a = n => num(p.getAttribute(n));
+  const st = estilo(p.getAttribute("style"));
+  switch (p.tagName) {
+    case "line":
+      svgEl("line", { x1: a("x1"), y1: a("y1"), x2: a("x2"), y2: a("y2"), ...st }, g);
+      break;
+    case "rect":
+      svgEl("rect", { x: a("x"), y: a("y"), width: a("width"), height: a("height"),
+                      rx: a("rx"), ry: a("ry"), ...st }, g);
+      break;
+    case "ellipse":
+      svgEl("ellipse", { cx: a("x") + a("width") / 2, cy: a("y") + a("height") / 2,
+                         rx: a("width") / 2, ry: a("height") / 2, ...st }, g);
+      break;
+    case "circle": {
+      const d = a("diameter");
+      svgEl("circle", { cx: a("x") + d / 2, cy: a("y") + d / 2, r: d / 2, ...st }, g);
+      break;
+    }
+    case "polygon": {
+      const pts = [];
+      for (let i = 1; p.hasAttribute("x" + i); i++) pts.push(`${a("x" + i)},${a("y" + i)}`);
+      const fechado = p.getAttribute("closed") !== "false";
+      svgEl(fechado ? "polygon" : "polyline", { points: pts.join(" "), ...st }, g);
+      break;
+    }
+    case "arc": {
+      // Arco do Qt: ângulos em graus, sentido anti-horário a partir das 3 horas.
+      const x = a("x"), y = a("y"), w = a("width"), h = a("height");
+      const ini = a("start"), ang = a("angle");
+      const cx = x + w / 2, cy = y + h / 2, rx = w / 2, ry = h / 2;
+      const ponto = g2 => [cx + rx * Math.cos(g2 * Math.PI / 180), cy - ry * Math.sin(g2 * Math.PI / 180)];
+      if (Math.abs(ang) >= 360) {
+        svgEl("ellipse", { cx, cy, rx, ry, ...st, fill: "none" }, g);
+        break;
+      }
+      const [x0, y0] = ponto(ini), [x1, y1] = ponto(ini + ang);
+      const grande = Math.abs(ang) > 180 ? 1 : 0, sentido = ang > 0 ? 0 : 1;
+      svgEl("path", { d: `M ${x0} ${y0} A ${rx} ${ry} 0 ${grande} ${sentido} ${x1} ${y1}`,
+                      ...st, fill: "none" }, g);
+      break;
+    }
+    case "text": {
+      const t = svgEl("text", { x: a("x"), y: a("y"), "font-size": tamanhoFonte(p.getAttribute("font")),
+                                fill: p.getAttribute("color") || "black" }, g);
+      const rot = a("rotation");
+      if (rot) t.setAttribute("transform", `rotate(${rot} ${a("x")} ${a("y")})`);
+      t.textContent = p.getAttribute("text") || "";
+      break;
+    }
+    case "terminal": {
+      // Pequena marca do borne (o QElectroTech desenha só ao selecionar; aqui fica sutil)
+      break;
+    }
+  }
+}
+
+/* ---------- leitura do arquivo ---------- */
+function lerDefinicoes(doc) {
+  // Coleção embutida: categorias aninhadas -> caminho "import/10_electric/.../x.elmt"
+  const defs = {};
+  const percorrer = (no, caminho) => {
+    for (const filho of no.children) {
+      if (filho.tagName === "category") percorrer(filho, [...caminho, filho.getAttribute("name")]);
+      else if (filho.tagName === "element")
+        defs[[...caminho, filho.getAttribute("name")].join("/")] = filho.querySelector(":scope > definition");
+    }
+  };
+  const col = doc.querySelector("project > collection");
+  if (col) percorrer(col, []);
+  return defs;
+}
+
+function rotacionar(x, y, k) {
+  for (let i = 0; i < ((k % 4) + 4) % 4; i++) [x, y] = [-y, x];
+  return [x, y];
+}
+
+function lerDiagrama(doc, indice = 0) {
+  const defs = lerDefinicoes(doc);
+  const diagramas = [...doc.querySelectorAll("project > diagram")];
+  const dg = diagramas[indice];
+  const elementos = {};
+  for (const e of dg.querySelectorAll(":scope > elements > element")) {
+    const caminho = e.getAttribute("type").replace("embed://", "");
+    const def = defs[caminho];
+    const info = {};
+    e.querySelectorAll(":scope > elementInformations > elementInformation")
+      .forEach(i => info[i.getAttribute("name")] = (i.textContent || "").trim());
+    const bornes = {};
+    if (def) for (const t of def.querySelectorAll("description > terminal")) {
+      bornes[t.getAttribute("uuid")] = {
+        nome: t.getAttribute("name") || "",
+        x: num(t.getAttribute("x")), y: num(t.getAttribute("y")),
+        orientacao: t.getAttribute("orientation") || "n",
+      };
+    }
+    elementos[e.getAttribute("uuid")] = {
+      no: e, def, caminho, info, bornes,
+      x: num(e.getAttribute("x")), y: num(e.getAttribute("y")),
+      orientacao: parseInt(e.getAttribute("orientation") || "0", 10),
+    };
+  }
+  const fios = [...dg.querySelectorAll(":scope > conductors > conductor")].map(c => ({
+    no: c,
+    a: [c.getAttribute("element1"), c.getAttribute("terminal1")],
+    b: [c.getAttribute("element2"), c.getAttribute("terminal2")],
+    segmentos: [...c.querySelectorAll(":scope > segment")].map(s => ({
+      horizontal: s.getAttribute("orientation") === "horizontal",
+      comprimento: num(s.getAttribute("length")),
+    })),
+  }));
+  return { dg, elementos, fios, total: diagramas.length };
+}
+
+function pontoBorne(el, uuidBorne) {
+  const b = el.bornes[uuidBorne];
+  if (!b) return null;
+  const [x, y] = rotacionar(b.x, b.y, el.orientacao);
+  return [x + el.x, y + el.y];
+}
+
+function direcaoBorne(el, uuidBorne) {
+  const ordem = ["n", "e", "s", "w"];
+  const b = el.bornes[uuidBorne];
+  if (!b) return "n";
+  return ordem[(ordem.indexOf(b.orientacao) + el.orientacao + 4) % 4];
+}
+
+/* ---------- desenho da folha ---------- */
+function desenharMoldura(dg, svg) {
+  const cols = num(dg.getAttribute("cols"), 17), colsize = num(dg.getAttribute("colsize"), 60);
+  const rows = num(dg.getAttribute("rows"), 8), rowsize = num(dg.getAttribute("rowsize"), 80);
+  const cab = 20;                       // faixa dos números de colunas / letras de linhas
+  const larg = cols * colsize, alt = rows * rowsize;
+  const g = svgEl("g", { class: "moldura", stroke: "#888", "stroke-width": 0.6, fill: "none" }, svg);
+  svgEl("rect", { x: 0, y: 0, width: larg + cab, height: alt + cab }, g);
+  svgEl("rect", { x: cab, y: cab, width: larg, height: alt }, g);
+  for (let c = 0; c < cols; c++) {
+    svgEl("line", { x1: cab + c * colsize, y1: 0, x2: cab + c * colsize, y2: cab }, g);
+    const t = svgEl("text", { x: cab + c * colsize + colsize / 2, y: 14, "text-anchor": "middle",
+                              "font-size": 10, fill: "#666", stroke: "none" }, g);
+    t.textContent = c + 1;
+  }
+  for (let r = 0; r < rows; r++) {
+    svgEl("line", { x1: 0, y1: cab + r * rowsize, x2: cab, y2: cab + r * rowsize }, g);
+    const t = svgEl("text", { x: 10, y: cab + r * rowsize + rowsize / 2 + 4, "text-anchor": "middle",
+                              "font-size": 10, fill: "#666", stroke: "none" }, g);
+    t.textContent = String.fromCharCode(65 + r);
+  }
+  return { largura: larg + cab, altura: alt + cab };
+}
+
+function rotuloMestre(el, elementos) {
+  for (const l of el.no.querySelectorAll(":scope > links_uuids > link_uuid")) {
+    const m = elementos[l.getAttribute("uuid")];
+    if (m && m.info.label) return m.info.label;
+  }
+  return "";
+}
+
+function desenharElemento(el, svg, elementos) {
+  const g = svgEl("g", { class: "elemento",
+    transform: `translate(${el.x} ${el.y}) rotate(${90 * el.orientacao})` }, svg);
+  if (!el.def) {
+    svgEl("rect", { x: -10, y: -10, width: 20, height: 20, fill: "#fdd", stroke: "red" }, g);
+    return g;
+  }
+  for (const p of el.def.querySelectorAll(":scope > description > *")) desenharPrimitiva(p, g);
+  // Textos do elemento (rótulo K1, S1...) ficam na instância, não na definição
+  for (const t of el.no.querySelectorAll(":scope > dynamic_texts > dynamic_elmt_text")) {
+    let texto = "";
+    const origem = t.getAttribute("text_from");
+    if (origem === "ElementInfo") {
+      const campo = t.querySelector("info_name")?.textContent;
+      texto = el.info[campo] || (campo === "label" ? rotuloMestre(el, elementos) : "");
+    }
+    else if (origem === "UserText") texto = t.querySelector(":scope > text")?.textContent || "";
+    else if (origem === "CompositeText") texto = el.info.label || "";
+    if (!texto) continue;
+    const x = num(t.getAttribute("x")), y = num(t.getAttribute("y"));
+    const tam = tamanhoFonte(t.getAttribute("font"));
+    const tx = svgEl("text", { x, y: y + tam, "font-size": tam, fill: t.getAttribute("color") || "black" }, g);
+    const rot = num(t.getAttribute("rotation"));
+    if (rot) tx.setAttribute("transform", `rotate(${rot} ${x} ${y})`);
+    tx.textContent = texto;
+  }
+  return g;
+}
+
+function caminhoFio(fio, elementos) {
+  const ea = elementos[fio.a[0]], eb = elementos[fio.b[0]];
+  if (!ea || !eb) return null;
+  const p1 = pontoBorne(ea, fio.a[1]), p2 = pontoBorne(eb, fio.b[1]);
+  if (!p1 || !p2) return null;
+  const pts = [p1];
+  if (fio.segmentos.length) {
+    // Caminho gravado pelo QElectroTech: segmentos a partir do borne 1
+    let [x, y] = p1;
+    for (const s of fio.segmentos) {
+      if (s.horizontal) x += s.comprimento; else y += s.comprimento;
+      pts.push([x, y]);
+    }
+  } else if (p1[0] !== p2[0] && p1[1] !== p2[1]) {
+    // Caminho automático (aproximação do QElectroTech): cada ponta sai na direção do seu borne
+    const vert = d => d === "n" || d === "s";
+    const v1 = vert(direcaoBorne(ea, fio.a[1])), v2 = vert(direcaoBorne(eb, fio.b[1]));
+    if (v1 && v2) {                       // os dois verticais: Z com trecho horizontal no meio
+      const my = (p1[1] + p2[1]) / 2;
+      pts.push([p1[0], my], [p2[0], my]);
+    } else if (!v1 && !v2) {              // os dois horizontais: Z com trecho vertical no meio
+      const mx = (p1[0] + p2[0]) / 2;
+      pts.push([mx, p1[1]], [mx, p2[1]]);
+    } else if (!v1 && v2) {               // sai na horizontal e chega na vertical: L
+      pts.push([p2[0], p1[1]]);
+    } else {                              // sai na vertical e chega na horizontal: L
+      pts.push([p1[0], p2[1]]);
+    }
+  }
+  pts.push(p2);
+  return pts;
+}
+
+function desenhar(doc) {
+  const svg = document.getElementById("folha");
+  svg.innerHTML = "";
+  const avisos = [];
+  const { dg, elementos, fios, total } = lerDiagrama(doc, 0);
+  const { largura, altura } = desenharMoldura(dg, svg);
+  // As coordenadas do QElectroTech já incluem a faixa de 20 px dos cabeçalhos da moldura.
+  const gFios = svgEl("g", { class: "fios", fill: "none", stroke: "black", "stroke-width": 1 }, svg);
+  const gElem = svgEl("g", { class: "elementos" }, svg);
+  let semDef = 0;
+  for (const el of Object.values(elementos)) {
+    if (!el.def) semDef++;
+    desenharElemento(el, gElem, elementos);
+  }
+  for (const f of fios) {
+    const pts = caminhoFio(f, elementos);
+    if (!pts) continue;
+    svgEl("polyline", { points: pts.map(p => p.join(",")).join(" ") }, gFios);
+    // Ponto de junção nos bornes com mais de um fio fica para o passo da simulação
+  }
+  if (semDef) avisos.push(`${semDef} elemento(s) sem definição embutida no arquivo (desenhados como quadrado vermelho).`);
+  if (total > 1) avisos.push(`O projeto tem ${total} folhas; por enquanto só a primeira é mostrada.`);
+  svg.setAttribute("viewBox", `-2 -2 ${largura + 4} ${altura + 4}`);
+  svg.setAttribute("width", largura + 4);
+  svg.setAttribute("height", altura + 4);
+  svg.style.display = "block";
+  document.getElementById("vazio").style.display = "none";
+  document.getElementById("avisos").textContent = avisos.join(" ");
+  document.getElementById("info").textContent =
+    `${Object.keys(elementos).length} elementos, ${fios.length} fios`;
+}
+
+/* ---------- abrir arquivo ---------- */
+function abrirTexto(texto, nome) {
+  const doc = new DOMParser().parseFromString(texto, "application/xml");
+  if (doc.querySelector("parsererror") || !doc.querySelector("project > diagram")) {
+    document.getElementById("avisos").textContent = `Não consegui ler "${nome}" como diagrama do QElectroTech.`;
+    return;
+  }
+  desenhar(doc);
+  document.title = `${nome} · qet-simulador`;
+}
+
+function abrirArquivo(f) {
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = () => abrirTexto(r.result, f.name);
+  r.readAsText(f, "utf-8");
+}
+
+document.getElementById("arquivo").addEventListener("change", e => abrirArquivo(e.target.files[0]));
+const vazio = document.getElementById("vazio");
+["dragenter", "dragover"].forEach(ev => document.addEventListener(ev, e => {
+  e.preventDefault(); vazio.classList.add("arrastando");
+}));
+["dragleave", "drop"].forEach(ev => document.addEventListener(ev, e => {
+  e.preventDefault(); vazio.classList.remove("arrastando");
+}));
+document.addEventListener("drop", e => abrirArquivo(e.dataTransfer.files[0]));
+</script>
+</body>
+</html>

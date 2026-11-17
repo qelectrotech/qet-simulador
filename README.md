@@ -35,6 +35,14 @@ Exemplos incluídos / *Included examples* (`circuitos-qet/`): partida direta, re
 partida temporizada, estrela-triângulo (comando), partida direta e reversão com força / *DOL,
 reversing, timed start, star-delta (control), DOL and reversing with power circuit*.
 
+## Versão gráfica (em desenvolvimento) / *Graphical version (in progress)*
+
+Abra `web/index.html` no navegador (duplo clique) e escolha um arquivo `.qet`. Funciona sem internet:
+nada é enviado para fora do seu computador. Por enquanto só **mostra** o diagrama; a simulação
+gráfica vem a seguir.
+*Open `web/index.html` in a browser and pick a `.qet` file. Works offline. For now it only displays
+the diagram; graphical simulation comes next.*
+
 ## Como usar / How to use
 
 Requer Python 3.8+ (sem bibliotecas extras). / *Requires Python 3.8+ (no extra libraries).*
