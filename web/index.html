@@ -47,6 +47,9 @@
   <label>Abrir diagrama do QElectroTech (.qet):
     <input type="file" id="arquivo" accept=".qet">
   </label>
+  <label id="rotulo-exemplos" style="display:none">ou um exemplo:
+    <select id="exemplos"><option value="">escolha…</option></select>
+  </label>
   <button id="pausa" disabled>⏸ Pausar tempo</button>
   <button id="reiniciar" disabled>↺ Reiniciar</button>
   <span class="info" id="relogio"></span>
@@ -649,6 +652,34 @@ function abrirArquivo(f) {
 }
 
 document.getElementById("arquivo").addEventListener("change", e => abrirArquivo(e.target.files[0]));
+
+/* Exemplos do repositório: só aparecem quando a página é servida pela web (GitHub Pages);
+   aberta direto do disco, o navegador não deixa ler outros arquivos e a lista fica escondida. */
+const EXEMPLOS = {
+  "partida_direta.qet": "Partida direta (comando)",
+  "partida_direta_forca.qet": "Partida direta (comando + força)",
+  "reversao.qet": "Reversão (comando)",
+  "reversao_forca.qet": "Reversão (comando + força)",
+  "partida_temporizada.qet": "Partida temporizada",
+  "estrela_triangulo.qet": "Estrela-triângulo (comando)",
+};
+if (location.protocol.startsWith("http")) {
+  const sel = document.getElementById("exemplos");
+  for (const [arq, nome] of Object.entries(EXEMPLOS)) {
+    const o = document.createElement("option"); o.value = arq; o.textContent = nome; sel.appendChild(o);
+  }
+  document.getElementById("rotulo-exemplos").style.display = "";
+  sel.addEventListener("change", async () => {
+    if (!sel.value) return;
+    try {
+      const r = await fetch(`../circuitos-qet/${sel.value}`);
+      if (!r.ok) throw new Error(r.status);
+      abrirTexto(await r.text(), sel.value);
+    } catch (e) {
+      document.getElementById("avisos").textContent = `Não consegui carregar o exemplo (${e.message}).`;
+    }
+  });
+}
 const vazio = document.getElementById("vazio");
 ["dragenter", "dragover"].forEach(ev => document.addEventListener(ev, e => {
   e.preventDefault(); vazio.classList.add("arrastando");

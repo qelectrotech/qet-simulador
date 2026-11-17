@@ -37,6 +37,8 @@ reversing, timed start, star-delta (control), DOL and reversing with power circu
 
 ## Versão gráfica / *Graphical version*
 
+**Online:** https://tonymarim.github.io/qet-simulador/ (com circuitos de exemplo / *with example circuits*)
+
 Abra `web/index.html` no navegador (duplo clique) e escolha um arquivo `.qet`. O diagrama aparece como
 no QElectroTech e pode ser simulado: **clique e segure** uma botoeira para pressioná-la (**Shift+clique**
 mantém pressionada), clique no **disjuntor** para ligar/desligar e no **relé térmico** para simular
