@@ -10,7 +10,8 @@ Simulador de comandos elétricos que lê arquivos `.qet` do [QElectroTech](https
 Lê um diagrama de comando desenhado no QElectroTech e simula, no terminal, o
 comportamento de botoeiras, bobinas e contatos: selo, intertravamento, desligamento
 e temporizadores (retardo na energização e na desenergização). No circuito de força, mostra se o
-motor gira, o sentido de rotação, falta de fase e curto-circuito, com disjuntor e relé térmico.
+motor gira, o sentido de rotação, falta de fase e curto-circuito, com disjuntor e relé térmico
+(o disjuntor dispara sozinho em curto-circuito entre fases).
 
 *Reads a control diagram drawn in QElectroTech and simulates push buttons, coils and
 contacts in the terminal (self-holding, interlocking, stop, on-delay and off-delay timers). In the

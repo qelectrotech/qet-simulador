@@ -301,6 +301,34 @@ class Simulador:
                 return "estável"
         return "OSCILANDO"
 
+    # --- disjuntor dispara sozinho em curto-circuito ----------------
+    def disparos_por_curto(self):
+        """Se houver curto entre fases, desarma o disjuntor que o alimenta."""
+        _, avisos = self.forca()
+        curtos = [a for a in avisos if a.startswith("CURTO-CIRCUITO")]
+        msgs = []
+        for u in self.disj_ligado:
+            if not curtos:
+                break
+            if not self.disj_ligado[u]:
+                continue
+            self.disj_ligado[u] = False            # testa: desligar este resolve o curto?
+            _, depois = self.forca()
+            resolvidos = [c for c in curtos if c not in depois]
+            if resolvidos:
+                fases = ", ".join(c.replace("CURTO-CIRCUITO ", "") for c in resolvidos)
+                msgs.append(f"{self.el[u]['nome'] or 'disjuntor'} DISPAROU (curto-circuito {fases})")
+                curtos = [c for c in curtos if c in depois]
+            else:
+                self.disj_ligado[u] = True         # não era este; volta a ligar
+        if msgs:
+            self.resolver()
+        return msgs
+
+    def mostrar_disparos(self):
+        for m in self.disparos_por_curto():
+            print(f"  t={self.relogio:5.1f}s  >>> {m}  -> {self.estado()}")
+
     # --- interação ----------------------------------------------
     def uuid_de(self, nome):
         for u, e in self.el.items():
@@ -327,6 +355,7 @@ class Simulador:
         situacao = self.resolver()
         verbo = "pressiona" if pressionar else "solta    "
         print(f"  t={self.relogio:5.1f}s {verbo} {nome:<4} -> {self.estado()}   [{situacao}]")
+        self.mostrar_disparos()
 
     def avancar(self, segundos, dt=0.1):
         """Avança o tempo simulado em passos de dt, mostrando só o que muda."""
@@ -343,7 +372,8 @@ class Simulador:
             atual = self.estado()
             if atual != anterior:
                 print(f"  t={self.relogio:5.1f}s           -> {atual}   [{situacao}]")
-                anterior = atual
+                self.mostrar_disparos()
+                anterior = self.estado()
         print(f"  t={self.relogio:5.1f}s (fim)      -> {self.estado()}")
 
     def protecao(self, nome):
@@ -361,6 +391,7 @@ class Simulador:
                 continue
             situacao = self.resolver()
             print(f"  t={self.relogio:5.1f}s {acao} {e['nome']:<4} -> {self.estado()}   [{situacao}]")
+            self.mostrar_disparos()
             return True
         return False
 
