@@ -66,6 +66,17 @@ Comandos / *Commands*: `S1` pulso / *pulse* · `+S1` mantém / *hold* · `-S1` s
 `t 5` avança 5 s / *advance 5 s* · `tempo KT1 3` ajusta KT1 para 3 s / *set KT1 to 3 s* ·
 `Q1` liga/desliga disjuntor / *breaker on/off* · `F1` sobrecarga no térmico / *thermal overload trip/reset* · `sair` / *quit*
 
+## Formato e instalação do QElectroTech / *QElectroTech file format and install*
+
+- O simulador lê arquivos **`.qet`**. O QElectroTech 0.200 também salva **`.qetz`** (zip + banco SQLite),
+  que **não** é lido: use *Salvar como* e escolha o tipo `.qet`.
+  / *The simulator reads `.qet`. QElectroTech 0.200 can also save `.qetz` (zip + SQLite), which is not
+  read: use Save As and pick `.qet`.*
+- **Ubuntu:** a versão **Snap** do QElectroTech pode falhar ao salvar (erro em `/run/user/1000/doc/...`).
+  Use a versão **Flatpak** ou AppImage. / *On Ubuntu the Snap build may fail to save; use Flatpak or AppImage.*
+- Testado no Windows (QElectroTech 0.100) e no Ubuntu (QElectroTech 0.200, Flatpak), no navegador.
+  / *Tested on Windows and Ubuntu.*
+
 ## Regras para o desenho / Drawing rules
 
 1. **Vincule cada contato à sua bobina** pela referência cruzada do QElectroTech
