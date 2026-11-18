@@ -15,7 +15,8 @@ function rodar(arquivo, acoes) {
     let msgs = [];
     if (tipo === "p") {
       const u = sim.uuidDe(arg, ["botoeira"]);
-      msgs = msgs.concat(sim.pressionar(u, true).disparos, sim.pressionar(u, false).disparos);
+      if (sim.el[u].trava) msgs = msgs.concat(sim.pressionar(u, !sim.pressionado[u]).disparos);
+      else msgs = msgs.concat(sim.pressionar(u, true).disparos, sim.pressionar(u, false).disparos);
     } else if (tipo === "x") {
       msgs = msgs.concat(sim.protecao(sim.uuidDe(arg, ["disjuntor", "termico"])).disparos);
     } else if (tipo === "t") {

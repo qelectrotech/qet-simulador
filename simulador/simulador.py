@@ -69,14 +69,20 @@ def tipo_botoeira(nome_arquivo, definicao):
     return None, None
 
 
+def e_emergencia(tipo, definicao):
+    """Parada de emergência: fica travada quando acionada (só destrava ao acionar de novo)."""
+    return bool(re.search(r"urgence|emergenc|emergênc|not-?aus|e-?stop", tipo, re.I)
+                or re.search(r"emergency|urgence|emerg[eê]ncia|not-?aus", " ".join(definicao["nomes"]), re.I))
+
+
 def classificar(tipo, definicao):
     """Decide o papel do elemento no simulador. Devolve (papel, estado, origem)."""
     lt, kind = definicao["link_type"], definicao["kind"]
     nomes_bornes = set(definicao["bornes"].values())
     arquivo = tipo.split("/")[-1].lower()
     texto = " ".join(definicao["nomes"])
-    if {"L", "N"} <= nomes_bornes:
-        return "fonte", None, None
+    if lt == "simple" and nomes_bornes and nomes_bornes <= {"L", "N"}:
+        return "fonte", None, None             # fonte L+N, ou só fase (L) ou só neutro (N)
     if {"L1", "L2", "L3"} <= nomes_bornes:
         return "fonte3f", None, None
     if lt == "master" and kind.get("type") == "coil":
@@ -89,6 +95,9 @@ def classificar(tipo, definicao):
                 texto, re.I):
             return "termico", None, None
         return "disjuntor", None, None
+    if lt == "simple" and (re.search(r"fus[eií]|pojistka", arquivo) or "/10_fuses/" in tipo
+                           or re.search(r"\bfuse|\bfusible|\bfus[ií]vel", texto, re.I)):
+        return "fusivel", None, None           # fusível: sempre conduz
     if lt == "simple" and (arquivo.startswith("moto")
                            or re.search(r"\bmotor|\bmoteur", texto, re.I)):
         return "motor", None, None
@@ -101,6 +110,9 @@ def classificar(tipo, definicao):
                                           or kind.get("type") == "commutator"):
         arquivo = tipo.split("/")[-1]
         estado, origem = tipo_botoeira(arquivo, definicao)
+        if e_emergencia(tipo, definicao):
+            # Parada de emergência: NF, a não ser que a numeração dos bornes diga outra coisa
+            return "botoeira", (estado if origem == "bornes" else "NC"), "parada de emergência"
         if estado:
             return "botoeira", estado, origem
         if kind.get("type") == "commutator" or "push_button" in tipo:
@@ -131,6 +143,7 @@ def ler_circuito(caminho):
             "geo": d["geo"],
             "vinculos": [l.attrib["uuid"] for l in e.iter("link_uuid")],
             "tipo_contato": d["kind"].get("type", "simple"),  # simple, delayOn, delayOff
+            "trava": papel == "botoeira" and e_emergencia(e.attrib["type"], d),
             "info": info,
         }
 
@@ -224,7 +237,7 @@ class Simulador:
             return self.fechado(u)
         if papel == "disjuntor":
             return self.disj_ligado[u]
-        if papel == "termico":              # polos de força do térmico não abrem
+        if papel in ("termico", "fusivel"):  # polos do térmico e fusível sempre conduzem
             return True
         return False
 
@@ -263,11 +276,15 @@ class Simulador:
         for u, e in self.el.items():
             if e["papel"] != "motor":
                 continue
+            nome = e["nome"] or "motor"
+            por_nome = {n: t for t, n in e["bornes"].items()}
+            if {"U1", "V1", "W1", "U2", "V2", "W2"} <= set(por_nome):
+                motores.append(f"{nome}: {self.motor_6_bornes(u, por_nome, fases, viz)}")
+                continue
             # bornes na ordem do símbolo (U, V, W) e a fase que chega em cada um
             ordem = sorted(e["bornes"], key=lambda t: e["geo"][t])
             chegam = [[f for f in fases if (u, t) in fases[f]] for t in ordem]
             recebidas = [c[0] for c in chegam if len(c) == 1]
-            nome = e["nome"] or "motor"
             if any(len(c) > 1 for c in chegam):
                 motores.append(f"{nome}: EM CURTO (duas fases no mesmo borne)")
             elif len(recebidas) == 3 and len(set(recebidas)) == 3:
@@ -280,6 +297,34 @@ class Simulador:
             else:
                 motores.append(f"{nome}: parado")
         return motores, avisos
+
+    def motor_6_bornes(self, u, t, fases, viz):
+        """Motor de 6 bornes: estrela se U2, V2 e W2 estão unidos entre si (sem fase);
+        triângulo se U2, V2 e W2 recebem as fases de V1, W1 e U1 (U1-W2, V1-U2, W1-V2)."""
+        fase = lambda n: [f for f in fases if (u, t[n]) in fases[f]]
+        ent = [fase(n) for n in ("U1", "V1", "W1")]
+        sai = [fase(n) for n in ("U2", "V2", "W2")]
+        if any(len(c) > 1 for c in ent + sai):
+            return "EM CURTO (duas fases no mesmo borne)"
+        if not all(len(c) == 1 for c in ent) or len({c[0] for c in ent}) != 3:
+            recebidas = sorted({c[0] for c in ent + sai if c})
+            return f"FALTA DE FASE ({', '.join(recebidas)})" if recebidas else "parado"
+        seq = [c[0] for c in ent]
+        i = seq.index("L1")
+        sentido = "horário" if seq[i:] + seq[:i] == ["L1", "L2", "L3"] else "anti-horário"
+        if not any(sai):
+            # ponto estrela: U2, V2 e W2 ligados entre si
+            comp, fila = {(u, t["U2"])}, deque([(u, t["U2"])])
+            while fila:
+                n = fila.popleft()
+                for m in viz[n] - comp:
+                    comp.add(m); fila.append(m)
+            if (u, t["V2"]) in comp and (u, t["W2"]) in comp:
+                return f"GIRANDO em estrela ({sentido})"
+            return "ENROLAMENTOS ABERTOS (sem fechamento estrela ou triângulo)"
+        if [c[0] if c else None for c in sai] == [seq[1], seq[2], seq[0]]:
+            return f"GIRANDO em triângulo ({sentido})"
+        return "LIGAÇÃO INCORRETA dos enrolamentos"
 
     # --- resolve até estabilizar ---------------------------------
     def resolver(self, max_iter=50):
@@ -425,7 +470,9 @@ def main():
     print("Elementos encontrados:")
     for e in elementos.values():
         extra = f" ({e['estado_normal']})" if e["estado_normal"] else ""
-        if e["papel"] == "botoeira" and e["origem_estado"] not in (None, "bornes"):
+        if e.get("trava"):
+            extra += "  [parada de emergência: trava ao acionar]"
+        elif e["papel"] == "botoeira" and e["origem_estado"] not in (None, "bornes"):
             extra += f"  [tipo deduzido pelo {e['origem_estado']}]"
         if e["papel"] == "contato" and e["tipo_contato"] == "power":
             extra += ", potência"
@@ -500,6 +547,9 @@ Comandos:
                 sim.acao(cmd[1:], False)
             elif sim.protecao(cmd):
                 pass
+            elif sim.el[sim.uuid_de(cmd)].get("trava"):
+                u = sim.uuid_de(cmd)                 # parada de emergência: trava/destrava
+                sim.acao(cmd, not sim.pressionado[u])
             else:
                 sim.acao(cmd, True)
                 sim.acao(cmd, False)

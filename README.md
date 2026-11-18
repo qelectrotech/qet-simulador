@@ -100,8 +100,11 @@ Detalhes do formato: [`notas/formato-qet.md`](notas/formato-qet.md)
 ## Limitações atuais / Current limitations
 
 - Uma folha por projeto / *single sheet*
-- Força: motores trifásicos simples (3 bornes + PE); ainda sem motor de 6 bornes (estrela-triângulo)
-  / *power: simple 3-phase motors only; no 6-terminal motor yet*
+- Força: motores de 3 bornes e de 6 bornes (U1-V1-W1 / U2-V2-W2: identifica estrela, triângulo,
+  enrolamentos abertos e ligação incorreta) / *3- and 6-terminal motors (star, delta, open windings,
+  wrong connection)*
+- Também entende fontes separadas de fase (L) e neutro (N), fusíveis e parada de emergência (trava ao
+  acionar) / *also separate phase/neutral sources, fuses and latching emergency stops*
 - Cargas em série não suportadas / *series loads not supported*
 
 ## Licença / License

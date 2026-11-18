@@ -103,3 +103,15 @@ Os `terminal*` são os uuid dos bornes da definição (não os `id` numéricos d
   motor foi girado no desenho.
 - Armadilha vista: o NF de proteção no comando foi vinculado primeiro ao **Q1** em vez do **F1**.
   O simulador mostra a quais contatos cada proteção está ligada.
+
+## Motor de 6 bornes, fontes separadas, fusível e emergência
+
+- Motor `moteur_tri_de.elmt`: bornes nomeados `U1 V1 W1 U2 V2 W2 PE`. Estrela = U2, V2 e W2 unidos
+  entre si; triângulo (IEC) = U1-W2, V1-U2, W1-V2, ou seja, U2/V2/W2 recebem as fases de V1/W1/U1.
+- Fontes `src_p.elmt` (borne `L`) e `src_n.elmt` (borne `N`) podem ser elementos separados.
+- Fusível `pojistka1p.elmt` (pasta `10_fuses`): sempre conduz.
+- Parada de emergência `arret_urgence_deverrouillage_a_cle.elmt`: mestre `commutator`, bornes sem
+  número e sem NA/NF no nome; o simulador a trata como NF que trava ao acionar.
+- Armadilha vista de novo: contato de potência duplicado, colado exatamente sobre outro (mesmo x, y),
+  recebendo os fios no lugar do contato verdadeiro.
+

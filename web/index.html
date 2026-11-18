@@ -63,7 +63,8 @@
   <aside id="painel">
     <h2>Como usar</h2>
     <div>Clique e segure uma <b>botoeira</b> para pressioná-la. <b>Shift+clique</b> mantém pressionada.
-      Clique no <b>disjuntor</b> para ligar/desligar e no <b>relé térmico</b> para simular sobrecarga.</div>
+      Clique no <b>disjuntor</b> para ligar/desligar, no <b>relé térmico</b> para simular sobrecarga
+      e na <b>parada de emergência</b> para travar/destravar.</div>
     <h2>Estado</h2><div id="estado"></div>
     <div id="temporizadores"></div>
     <h2>Eventos</h2><div id="log"></div>
@@ -500,7 +501,16 @@ function prepararSimulacao(doc) {
     VISTA.grupos[u] = { g, r, bb };
     // Elementos clicáveis: toda a área do símbolo recebe o clique, não só as linhas
     if (["botoeira", "disjuntor", "termico"].includes(e.papel)) r.style.pointerEvents = "all";
-    if (e.papel === "botoeira") {
+    if (e.papel === "botoeira" && e.trava) {
+      // Parada de emergência: um clique trava, outro destrava
+      g.classList.add("clicavel");
+      g.addEventListener("click", () => {
+        const res = sim.pressionar(u, !sim.pressionado[u]);
+        log(`${e.nome || "emergência"} ${sim.pressionado[u] ? "ACIONADA (travada)" : "destravada"}`,
+            sim.pressionado[u] ? "alerta" : "");
+        depois(res);
+      });
+    } else if (e.papel === "botoeira") {
       g.classList.add("clicavel");
       g.addEventListener("pointerdown", ev => {
         ev.preventDefault();
@@ -525,6 +535,8 @@ function prepararSimulacao(doc) {
       const t = svgEl("text", { class: "giro", x: bb.x + bb.width + 6, y: bb.y + bb.height / 2 + 8,
                                 fill: COR.fase }, g);
       VISTA.grupos[u].giro = t;
+      VISTA.grupos[u].lig = svgEl("text", { x: bb.x + bb.width + 28, y: bb.y + bb.height / 2 + 6,
+                                            "font-size": 14, "font-weight": "bold", fill: COR.fase }, g);
     }
   }
   // Temporizadores: tempo ajustável
@@ -586,6 +598,7 @@ function atualizar() {
       const m = en.motores[u];
       cor = m && m.gira ? "rgba(214,39,40,.15)" : m && m.txt !== "parado" ? "rgba(255,140,0,.35)" : "none";
       v.giro.textContent = m && m.gira ? (m.gira > 0 ? "↻" : "↺") : "";
+      v.lig.textContent = m && m.gira && m.ligacao ? (m.ligacao === "estrela" ? "Y" : "Δ") : "";
       v.giro.style.transformBox = "fill-box"; v.giro.style.transformOrigin = "center";
       v.giro.style.animation = m && m.gira ? `${m.gira > 0 ? "horario" : "antihorario"} 1s linear infinite` : "";
     }

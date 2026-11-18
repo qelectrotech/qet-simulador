@@ -68,6 +68,12 @@ function tipoBotoeira(arquivo, def) {
   return [null, null];
 }
 
+function eEmergencia(tipo, def) {
+  // Parada de emergência: fica travada quando acionada (só destrava ao acionar de novo)
+  return /urgence|emergenc|emergênc|not-?aus|e-?stop/i.test(tipo)
+    || /emergency|urgence|emerg[eê]ncia|not-?aus/i.test(def.nomes.join(" "));
+}
+
 function classificar(tipo, def) {
   /* Papel do elemento no simulador: [papel, estado, origem]. */
   const lt = def.link_type, kind = def.kind;
@@ -75,7 +81,8 @@ function classificar(tipo, def) {
   const arquivo = tipo.split("/").pop();
   const arq = arquivo.toLowerCase();
   const t = def.nomes.join(" ");
-  if (nomesBornes.has("L") && nomesBornes.has("N")) return ["fonte", null, null];
+  if (lt === "simple" && nomesBornes.size && [...nomesBornes].every(n => n === "L" || n === "N"))
+    return ["fonte", null, null];            // fonte L+N, ou só fase (L) ou só neutro (N)
   if (["L1", "L2", "L3"].every(n => nomesBornes.has(n))) return ["fonte3f", null, null];
   if (lt === "master" && kind.type === "coil") return ["bobina", null, null];
   if (lt === "master" && kind.type === "protection") {
@@ -85,11 +92,16 @@ function classificar(tipo, def) {
       return ["termico", null, null];
     return ["disjuntor", null, null];
   }
+  if (lt === "simple" && (/fus[eií]|pojistka/i.test(arq) || tipo.includes("/10_fuses/")
+                          || /\bfuse|\bfusible|\bfus[ií]vel/i.test(t)))
+    return ["fusivel", null, null];          // fusível: sempre conduz
   if (lt === "simple" && (arq.startsWith("moto") || /\bmotor|\bmoteur/i.test(t)))
     return ["motor", null, null];
   if (lt === "slave") return ["contato", kind.state || "NO", "kindInformations"];
   if (Object.keys(def.bornes).length === 2 && (lt === "simple" || kind.type === "commutator")) {
     const [estado, origem] = tipoBotoeira(arquivo, def);
+    if (eEmergencia(tipo, def))              // NF, salvo se a numeração dos bornes disser outra coisa
+      return ["botoeira", origem === "bornes" ? estado : "NC", "parada de emergência"];
     if (estado) return ["botoeira", estado, origem];
     if (kind.type === "commutator" || tipo.includes("push_button")) return ["botoeira", null, null];
   }
@@ -115,6 +127,7 @@ function lerCircuito(doc, indiceFolha = 0) {
       bornes: d.bornes, geo: d.geo,
       vinculos: todos(e, "link_uuid").map(l => l.getAttribute("uuid")),
       tipo_contato: d.kind.type || "simple",
+      trava: papel === "botoeira" && eEmergencia(tipo, d),
       info,
     };
   }
@@ -212,7 +225,7 @@ class Simulador {
     const p = this.el[u].papel;
     if (p === "botoeira" || p === "contato") return this.fechado(u);
     if (p === "disjuntor") return this.disj_ligado[u];
-    if (p === "termico") return true;
+    if (p === "termico" || p === "fusivel") return true;   // térmico e fusível sempre conduzem
     return false;
   }
   grafo() {
@@ -252,6 +265,14 @@ class Simulador {
     const motores = [], detalhe = {};
     for (const [u, e] of Object.entries(this.el)) {
       if (e.papel !== "motor") continue;
+      const porNome = {};
+      for (const [t, n] of Object.entries(e.bornes)) porNome[n] = t;
+      if (["U1", "V1", "W1", "U2", "V2", "W2"].every(n => n in porNome)) {
+        const est = this.motor6Bornes(u, porNome, fases, viz);
+        motores.push(`${e.nome || "motor"}: ${est.txt}`);
+        detalhe[u] = est;
+        continue;
+      }
       const ordem = Object.keys(e.bornes).sort((p, q) =>
         e.geo[p][0] - e.geo[q][0] || e.geo[p][1] - e.geo[q][1]);
       const chegam = ordem.map(t => Object.keys(fases).filter(f => fases[f].has(no(u, t))));
@@ -271,6 +292,34 @@ class Simulador {
       detalhe[u] = est;
     }
     return { motores, avisos, detalhe, fases };
+  }
+
+  motor6Bornes(u, t, fases, viz) {
+    /* Estrela: U2, V2 e W2 unidos entre si (sem fase). Triângulo: U2, V2 e W2 recebem
+       as fases de V1, W1 e U1 (U1-W2, V1-U2, W1-V2). */
+    const fase = n => Object.keys(fases).filter(f => fases[f].has(no(u, t[n])));
+    const ent = ["U1", "V1", "W1"].map(fase), sai = ["U2", "V2", "W2"].map(fase);
+    if (ent.concat(sai).some(c => c.length > 1)) return { txt: "EM CURTO (duas fases no mesmo borne)", gira: 0 };
+    if (!ent.every(c => c.length === 1) || new Set(ent.map(c => c[0])).size !== 3) {
+      const rec = [...new Set(ent.concat(sai).filter(c => c.length).map(c => c[0]))].sort();
+      return rec.length ? { txt: `FALTA DE FASE (${rec.join(", ")})`, gira: 0 } : { txt: "parado", gira: 0 };
+    }
+    const seq = ent.map(c => c[0]), i = seq.indexOf("L1");
+    const horario = seq.slice(i).concat(seq.slice(0, i)).join(",") === "L1,L2,L3";
+    const sentido = horario ? "horário" : "anti-horário", gira = horario ? 1 : -1;
+    if (!sai.some(c => c.length)) {
+      const ini = no(u, t.U2), comp = new Set([ini]), fila = [ini];
+      while (fila.length) {
+        const n = fila.shift();
+        for (const m of viz.get(n) || []) if (!comp.has(m)) { comp.add(m); fila.push(m); }
+      }
+      if (comp.has(no(u, t.V2)) && comp.has(no(u, t.W2)))
+        return { txt: `GIRANDO em estrela (${sentido})`, gira, ligacao: "estrela" };
+      return { txt: "ENROLAMENTOS ABERTOS (sem fechamento estrela ou triângulo)", gira: 0 };
+    }
+    if (sai.map(c => c[0]).join(",") === [seq[1], seq[2], seq[0]].join(","))
+      return { txt: `GIRANDO em triângulo (${sentido})`, gira, ligacao: "triângulo" };
+    return { txt: "LIGAÇÃO INCORRETA dos enrolamentos", gira: 0 };
   }
 
   /* --- resolve até estabilizar --- */

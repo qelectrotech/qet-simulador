@@ -15,7 +15,7 @@ def rodar(arquivo, acoes):
         msgs = []
         if tipo == "p":
             u = nome_para(arg, ["botoeira"])
-            for v in (True, False):
+            for v in ((not sim.pressionado[u],) if sim.el[u].get("trava") else (True, False)):
                 sim.pressionado[u] = v; sim.resolver(); msgs += sim.disparos_por_curto()
         elif tipo == "x":
             u = nome_para(arg, ["disjuntor", "termico"])
