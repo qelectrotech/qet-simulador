@@ -53,7 +53,9 @@ function lerDefinicoes(projeto) {
 function tipoBotoeira(arquivo, def) {
   /* NA (NO) ou NF (NC), nesta ordem: numeração IEC dos bornes, nome do arquivo,
      nome do elemento na biblioteca. Devolve [estado, origem] ou [null, null]. */
-  const finais = new Set(Object.values(def.bornes).filter(n => n).map(n => n.slice(-1)));
+  const nomes = Object.values(def.bornes).filter(n => n);
+  // só vale para bornes numerados (13-14, 21-22...), não para A1-A2 ou L-N
+  const finais = nomes.length && nomes.every(n => /^\d+$/.test(n)) ? new Set(nomes.map(n => n.slice(-1))) : new Set();
   const iguais = (a, b) => a.size === b.length && b.every(x => a.has(x));
   if (iguais(finais, ["3", "4"])) return ["NO", "bornes"];
   if (iguais(finais, ["1", "2"])) return ["NC", "bornes"];
@@ -92,6 +94,9 @@ function classificar(tipo, def) {
       return ["termico", null, null];
     return ["disjuntor", null, null];
   }
+  if (lt === "simple" && Object.keys(def.bornes).length === 2 && (/lamp|voyant|lampara|signal/.test(arq)
+      || /\blight\b|\blamp|\blampe\b|l[aá]mpara|l[aâ]mpada|\bvoyant/i.test(t)))
+    return ["lampada", null, null];          // lâmpada de sinalização: carga entre L e N
   if (lt === "simple" && (/fus[eií]|pojistka/i.test(arq) || tipo.includes("/10_fuses/")
                           || /\bfuse|\bfusible|\bfus[ií]vel/i.test(t)))
     return ["fusivel", null, null];          // fusível: sempre conduz
@@ -362,10 +367,26 @@ class Simulador {
     return msgs;
   }
 
+  /* --- lâmpada acesa: fase (L) num borne e neutro (N) no outro, como uma bobina --- */
+  lampadas(viz = null) {
+    viz = viz || this.grafo();
+    const vL = this.alcancaveis("L", "fonte", viz), vN = this.alcancaveis("N", "fonte", viz);
+    const r = {};
+    for (const [u, e] of Object.entries(this.el)) {
+      if (e.papel !== "lampada") continue;
+      const [a, b] = Object.keys(e.bornes).map(t => no(u, t));
+      r[u] = (vL.has(a) && vN.has(b)) || (vL.has(b) && vN.has(a));
+    }
+    return r;
+  }
+
   /* --- texto de estado (mesmo formato do simulador.py) --- */
   estado() {
     let txt = Object.entries(this.energizada)
       .map(([u, v]) => `${this.el[u].nome}=${v ? "ENERGIZADA" : "desligada"}`).join(", ");
+    const acesas = Object.entries(this.lampadas());
+    if (acesas.length)
+      txt += " | " + acesas.map(([u, v]) => `${this.el[u].nome || "lâmpada"}=${v ? "ACESA" : "apagada"}`).join(", ");
     const { motores, avisos } = this.forca();
     if (motores.length) txt += " | " + motores.join(", ");
     const viz = this.grafo();
@@ -408,7 +429,7 @@ class Simulador {
     const { fases, detalhe, avisos } = this.forca();
     const vL = this.alcancaveis("L", "fonte", viz), vN = this.alcancaveis("N", "fonte", viz);
     const fase = new Set([...vL, ...fases.L1, ...fases.L2, ...fases.L3]);
-    return { fase, neutro: vN, motores: detalhe, avisos };
+    return { fase, neutro: vN, motores: detalhe, avisos, lampadas: this.lampadas(viz) };
   }
 }
 

@@ -50,7 +50,9 @@ def tipo_botoeira(nome_arquivo, definicao):
     2. nome do arquivo do símbolo (ex.: foot_no.elmt, poussoir_nf.elmt);
     3. nome do elemento na biblioteca, em qualquer idioma (ex.: "Botão de pressão (NA)").
     Devolve (estado, origem) ou (None, None) se não for possível decidir."""
-    finais = {n[-1:] for n in definicao["bornes"].values() if n}
+    nomes = [n for n in definicao["bornes"].values() if n]
+    # só vale para bornes numerados (13-14, 21-22...), não para A1-A2 ou L-N
+    finais = {n[-1:] for n in nomes} if nomes and all(n.isdigit() for n in nomes) else set()
     if finais == {"3", "4"}:
         return "NO", "bornes"
     if finais == {"1", "2"}:
@@ -95,6 +97,10 @@ def classificar(tipo, definicao):
                 texto, re.I):
             return "termico", None, None
         return "disjuntor", None, None
+    if lt == "simple" and len(definicao["bornes"]) == 2 and (
+            re.search(r"lamp|voyant|lampara|signal", arquivo)
+            or re.search(r"\blight\b|\blamp|\blampe\b|l[aá]mpara|l[aâ]mpada|\bvoyant", texto, re.I)):
+        return "lampada", None, None           # lâmpada de sinalização: carga entre L e N
     if lt == "simple" and (re.search(r"fus[eií]|pojistka", arquivo) or "/10_fuses/" in tipo
                            or re.search(r"\bfuse|\bfusible|\bfus[ií]vel", texto, re.I)):
         return "fusivel", None, None           # fusível: sempre conduz
@@ -381,10 +387,25 @@ class Simulador:
                 return u
         raise KeyError(f"Botoeira '{nome}' não encontrada")
 
+    def lampadas(self, viz=None):
+        """Lâmpada acesa: fase (L) num borne e neutro (N) no outro, como uma bobina."""
+        viz = viz if viz is not None else self.grafo()
+        vL, vN = self.alcancaveis("L", viz=viz), self.alcancaveis("N", viz=viz)
+        r = {}
+        for u, e in self.el.items():
+            if e["papel"] == "lampada":
+                a, b = [(u, t) for t in e["bornes"]]
+                r[u] = (a in vL and b in vN) or (b in vL and a in vN)
+        return r
+
     def estado(self):
         txt = ", ".join(
             f"{self.el[u]['nome']}={'ENERGIZADA' if v else 'desligada'}"
             for u, v in self.energizada.items())
+        acesas = self.lampadas()
+        if acesas:
+            txt += " | " + ", ".join(f"{self.el[u]['nome'] or 'lâmpada'}={'ACESA' if v else 'apagada'}"
+                                     for u, v in acesas.items())
         motores, avisos = self.forca()
         if motores:
             txt += " | " + ", ".join(motores)

@@ -103,8 +103,9 @@ Detalhes do formato: [`notas/formato-qet.md`](notas/formato-qet.md)
 - Força: motores de 3 bornes e de 6 bornes (U1-V1-W1 / U2-V2-W2: identifica estrela, triângulo,
   enrolamentos abertos e ligação incorreta) / *3- and 6-terminal motors (star, delta, open windings,
   wrong connection)*
-- Também entende fontes separadas de fase (L) e neutro (N), fusíveis e parada de emergência (trava ao
-  acionar) / *also separate phase/neutral sources, fuses and latching emergency stops*
+- Também entende fontes separadas de fase (L) e neutro (N), fusíveis, parada de emergência (trava ao
+  acionar) e lâmpadas de sinalização (acendem na cor do símbolo) / *also separate phase/neutral sources,
+  fuses, latching emergency stops and signaling lamps*
 - Cargas em série não suportadas / *series loads not supported*
 
 ## Licença / License

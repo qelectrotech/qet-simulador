@@ -286,7 +286,12 @@ function desenharElemento(el, svg, elementos) {
     svgEl("rect", { x: -10, y: -10, width: 20, height: 20, fill: "#fdd", stroke: "red" }, g);
     return g;
   }
-  for (const p of el.def.querySelectorAll(":scope > description > *")) desenharPrimitiva(p, g);
+  for (const p of el.def.querySelectorAll(":scope > description > *")) {
+    desenharPrimitiva(p, g);
+    const est = estilo(p.getAttribute("style"));
+    if ((p.tagName === "ellipse" || p.tagName === "circle") && est.fill !== "none" && !g.dataset.cor)
+      g.dataset.cor = est.fill;                  // cor da lâmpada de sinalização
+  }
   // Textos do elemento (rótulo K1, S1...) ficam na instância, não na definição
   for (const t of el.no.querySelectorAll(":scope > dynamic_texts > dynamic_elmt_text")) {
     let texto = "";
@@ -594,6 +599,13 @@ function atualizar() {
     if ((e.papel === "contato" || e.papel === "botoeira") && sim.atuado(u)) cor = "rgba(26,127,55,.22)";
     if (e.papel === "disjuntor" && !sim.disj_ligado[u]) cor = "rgba(120,120,120,.30)";
     if (e.papel === "termico" && sim.disparado[u]) cor = "rgba(255,140,0,.35)";
+    if (e.papel === "lampada")              // apagada: cor do símbolo em cinza
+      v.g.style.filter = en.lampadas[u] ? "drop-shadow(0 0 4px " + (v.g.dataset.cor || "gold") + ")" : "grayscale(1) opacity(.7)";
+    if (e.papel === "lampada" && en.lampadas[u]) {
+      const c = v.g.dataset.cor || "gold";
+      cor = c;
+      v.r.setAttribute("fill-opacity", ".55");
+    }
     if (e.papel === "motor") {
       const m = en.motores[u];
       cor = m && m.gira ? "rgba(214,39,40,.15)" : m && m.txt !== "parado" ? "rgba(255,140,0,.35)" : "none";
@@ -603,6 +615,7 @@ function atualizar() {
       v.giro.style.animation = m && m.gira ? `${m.gira > 0 ? "horario" : "antihorario"} 1s linear infinite` : "";
     }
     v.r.setAttribute("fill", cor);
+    if (!(e.papel === "lampada" && en.lampadas[u])) v.r.removeAttribute("fill-opacity");
     if (v.barra) {
       const T = sim.t_ajuste[u], t = sim.energizada[u] ? Math.min(sim.t_ligada[u], T) : 0;
       v.barra.style.width = `${100 * t / T}%`;
@@ -612,6 +625,8 @@ function atualizar() {
   const linhas = [];
   for (const [u, v] of Object.entries(sim.energizada))
     linhas.push(`<div class="${v ? "ok" : ""}">${sim.el[u].nome || "bobina"}: ${v ? "ENERGIZADA" : "desligada"}</div>`);
+  for (const [u, v] of Object.entries(en.lampadas))
+    linhas.push(`<div class="${v ? "ok" : ""}">${sim.el[u].nome || "lâmpada"}: ${v ? "ACESA" : "apagada"}</div>`);
   for (const [u, m] of Object.entries(en.motores))
     linhas.push(`<div class="${m.gira ? "ok" : m.txt === "parado" ? "" : "alerta"}">${sim.el[u].nome || "motor"}: ${m.txt}</div>`);
   const est = sim.estado();
