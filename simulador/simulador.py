@@ -49,10 +49,11 @@ def ler_definicoes(raiz):
 
 def bornes_sensor(definicao):
     """Sensor de 3 fios (PNP): qual borne é +, - e saída. Pela numeração IEC (1 = +, 3 = -, 4 = saída)
-    ou, se os bornes não têm nome, pela cor escrita ao lado (BN = +, BU = -, BK = saída).
+    ou, se os bornes não têm nome, pela cor ou número escrito ao lado (BN/BR = +, BU/BL = -, BK = saída).
     Devolve {"+": uuid, "-": uuid, "saida": uuid} ou None."""
     por_nome = {"1": "+", "3": "-", "4": "saida"}
-    por_cor = {"BN": "+", "BU": "-", "BK": "saida"}
+    # cores (BN/BR = marrom, BU/BL = azul, BK = preto) ou a numeração escrita ao lado do borne
+    por_cor = {"BN": "+", "BR": "+", "BU": "-", "BL": "-", "BK": "saida", "1": "+", "3": "-", "4": "saida"}
     r = {}
     for t, n in definicao["bornes"].items():
         if n in por_nome:

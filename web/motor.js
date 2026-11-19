@@ -55,8 +55,10 @@ function lerDefinicoes(projeto) {
 
 function bornesSensor(def) {
   /* Sensor de 3 fios (PNP): qual borne é +, - e saída. Pela numeração IEC (1 = +, 3 = -, 4 = saída)
-     ou, se os bornes não têm nome, pela cor escrita ao lado (BN = +, BU = -, BK = saída). */
-  const porNome = { 1: "+", 3: "-", 4: "saida" }, porCor = { BN: "+", BU: "-", BK: "saida" };
+     ou, se os bornes não têm nome, pela cor ou número escrito ao lado (BN/BR = +, BU/BL = -, BK = saída). */
+  // cores (BN/BR = marrom, BU/BL = azul, BK = preto) ou a numeração escrita ao lado do borne
+  const porNome = { 1: "+", 3: "-", 4: "saida" },
+        porCor = { BN: "+", BR: "+", BU: "-", BL: "-", BK: "saida", 1: "+", 3: "-", 4: "saida" };
   const r = {};
   for (const [t, n] of Object.entries(def.bornes)) {
     if (porNome[n]) r[porNome[n]] = t;
