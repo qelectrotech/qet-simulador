@@ -14,7 +14,8 @@
   header .info { font-size: 13px; color: #555; }
   #area { padding: 16px; display: flex; gap: 16px; align-items: flex-start; }
   #painel { width: 300px; flex: none; background: #fff; border: 1px solid var(--borda);
-            border-radius: 6px; padding: 12px; font-size: 13px; display: none; }
+            border-radius: 6px; padding: 12px; font-size: 13px; display: none;
+            position: sticky; top: 16px; }   /* fica visível ao rolar entre as folhas */
   #painel h2 { font-size: 13px; margin: 12px 0 6px; text-transform: uppercase; color: #666; }
   #painel h2:first-child { margin-top: 0; }
   #estado div { padding: 2px 0; }
@@ -441,27 +442,43 @@ function desenhar(doc) {
   const svg = document.getElementById("folha");
   svg.innerHTML = "";
   const avisos = [];
-  const { dg, elementos, fios, total } = lerDiagrama(doc, 0);
-  const { largura, altura } = desenharMoldura(dg, svg);
-  // As coordenadas do QElectroTech já incluem a faixa de 20 px dos cabeçalhos da moldura.
-  const gFios = svgEl("g", { class: "fios", fill: "none", stroke: "black", "stroke-width": 1 }, svg);
-  const gElem = svgEl("g", { class: "elementos" }, svg);
-  let semDef = 0;
-  for (const el of Object.values(elementos)) {
-    if (!el.def) semDef++;
-    desenharElemento(el, gElem, elementos);
-  }
-  const caminhos = fios.map(f => caminhoFio(f, elementos));
+  // Todas as folhas do projeto, uma abaixo da outra
+  const total = doc.querySelectorAll("project > diagram").length;
+  const folhas = [];
+  for (let i = 0; i < total; i++) folhas.push(lerDiagrama(doc, i));
+  const todos = Object.assign({}, ...folhas.map(f => f.elementos));   // rótulos entre folhas
+  const ESPACO = 40;                    // espaço entre folhas (com o título "Folha i/n")
+  let y0 = 0, largura = 0, nElem = 0, nFios = 0, semDef = 0;
   VISTA.fios = [];
-  caminhos.forEach((pts, i) => {
-    if (!pts) return;
-    const linha = svgEl("polyline", { points: pts.map(p => p.join(",")).join(" ") }, gFios);
-    VISTA.fios.push({ linha, chave: fios[i].a[0] + "|" + fios[i].a[1] });
+  folhas.forEach(({ dg, elementos, fios }, i) => {
+    if (total > 1) {
+      const t = svgEl("text", { x: 0, y: y0 + 16, "font-size": 14, "font-weight": "bold", fill: "#555" }, svg);
+      t.textContent = `Folha ${i + 1}/${total}` + (dg.getAttribute("title") ? ` · ${dg.getAttribute("title")}` : "");
+      y0 += 26;
+    }
+    const gf = svgEl("g", { class: "folha", transform: `translate(0 ${y0})` }, svg);
+    const dim = desenharMoldura(dg, gf);
+    // As coordenadas do QElectroTech já incluem a faixa de 20 px dos cabeçalhos da moldura.
+    const gFios = svgEl("g", { class: "fios", fill: "none", stroke: "black", "stroke-width": 1 }, gf);
+    const gElem = svgEl("g", { class: "elementos" }, gf);
+    for (const el of Object.values(elementos)) {
+      if (!el.def) semDef++;
+      desenharElemento(el, gElem, todos);
+    }
+    const caminhos = fios.map(f => caminhoFio(f, elementos));
+    caminhos.forEach((pts, j) => {
+      if (!pts) return;
+      const linha = svgEl("polyline", { points: pts.map(p => p.join(",")).join(" ") }, gFios);
+      VISTA.fios.push({ linha, chave: fios[j].a[0] + "|" + fios[j].a[1] });
+    });
+    for (const [x, y] of juncoes(fios, caminhos))
+      svgEl("circle", { cx: x, cy: y, r: 1.8, fill: "black", stroke: "none" }, gFios);
+    y0 += dim.altura + (i < total - 1 ? ESPACO : 0);
+    largura = Math.max(largura, dim.largura);
+    nElem += Object.keys(elementos).length; nFios += fios.length;
   });
-  for (const [x, y] of juncoes(fios, caminhos))
-    svgEl("circle", { cx: x, cy: y, r: 1.8, fill: "black", stroke: "none" }, gFios);
+  const altura = y0;
   if (semDef) avisos.push(`${semDef} elemento(s) sem definição embutida no arquivo (desenhados como quadrado vermelho).`);
-  if (total > 1) avisos.push(`O projeto tem ${total} folhas; por enquanto só a primeira é mostrada.`);
   svg.setAttribute("viewBox", `-2 -2 ${largura + 4} ${altura + 4}`);
   svg.setAttribute("width", largura + 4);
   svg.setAttribute("height", altura + 4);
@@ -469,7 +486,7 @@ function desenhar(doc) {
   document.getElementById("vazio").style.display = "none";
   document.getElementById("avisos").textContent = avisos.join(" ");
   document.getElementById("info").textContent =
-    `${Object.keys(elementos).length} elementos, ${fios.length} fios`;
+    `${total > 1 ? total + " folhas, " : ""}${nElem} elementos, ${nFios} fios`;
   VISTA.svg = svg;
   return avisos;
 }
@@ -686,6 +703,7 @@ document.getElementById("arquivo").addEventListener("change", e => abrirArquivo(
 const EXEMPLOS = {
   "partida_direta.qet": "Partida direta (comando)",
   "partida_direta_forca.qet": "Partida direta (comando + força)",
+  "partida_direta_2_folhas.qet": "Partida direta em 2 folhas (força e comando separados)",
   "reversao.qet": "Reversão (comando)",
   "reversao_forca.qet": "Reversão (comando + força)",
   "partida_temporizada.qet": "Partida temporizada",

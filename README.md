@@ -99,7 +99,9 @@ Detalhes do formato: [`notas/formato-qet.md`](notas/formato-qet.md)
 
 ## Limitações atuais / Current limitations
 
-- Uma folha por projeto / *single sheet*
+- Várias folhas: todas são desenhadas e simuladas juntas; contatos vinculados entre folhas funcionam.
+  Fios que passam de uma folha a outra pela referência de página (*renvoi de folio*) ainda sem teste com
+  arquivo real / *multi-sheet projects supported; folio reports not yet tested on a real file*
 - Força: motores de 3 bornes e de 6 bornes (U1-V1-W1 / U2-V2-W2: identifica estrela, triângulo,
   enrolamentos abertos e ligação incorreta) / *3- and 6-terminal motors (star, delta, open windings,
   wrong connection)*

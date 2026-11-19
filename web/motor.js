@@ -82,6 +82,8 @@ function classificar(tipo, def) {
   const nomesBornes = new Set(Object.values(def.bornes));
   const arquivo = tipo.split("/").pop();
   const arq = arquivo.toLowerCase();
+  if (lt === "next_report" || lt === "previous_report")
+    return ["renvoi", null, null];          // referência de página: liga um fio entre folhas
   const t = def.nomes.join(" ");
   if (lt === "simple" && nomesBornes.size && [...nomesBornes].every(n => n === "L" || n === "N"))
     return ["fonte", null, null];            // fonte L+N, ou só fase (L) ou só neutro (N)
@@ -113,12 +115,12 @@ function classificar(tipo, def) {
   return ["desconhecido", null, null];
 }
 
-function lerCircuito(doc, indiceFolha = 0) {
+function lerCircuito(doc) {
   const projeto = doc.documentElement;
   const defs = lerDefinicoes(projeto);
-  const diagrama = filhos(projeto, "diagram")[indiceFolha];
+  const diagramas = filhos(projeto, "diagram");      // todas as folhas do projeto
   const elementos = {};
-  for (const e of filhos(filho(diagrama, "elements"), "element")) {
+  for (const e of diagramas.flatMap(dg => filhos(filho(dg, "elements"), "element"))) {
     const tipo = e.getAttribute("type");
     const d = defs[tipo.replace("embed://", "")];
     if (!d) continue;
@@ -140,9 +142,16 @@ function lerCircuito(doc, indiceFolha = 0) {
   for (const el of Object.values(elementos))
     if (el.papel === "contato" && !el.nome && el.vinculos.length && elementos[el.vinculos[0]])
       el.nome = elementos[el.vinculos[0]].nome;
-  const fios = filhos(filho(diagrama, "conductors"), "conductor").map(c => [
+  const fios = diagramas.flatMap(dg => filhos(filho(dg, "conductors"), "conductor")).map(c => [
     [c.getAttribute("element1"), c.getAttribute("terminal1")],
     [c.getAttribute("element2"), c.getAttribute("terminal2")]]);
+  // Referência de página (renvoi de folio): o borne de cada ponta é o mesmo ponto elétrico
+  for (const [u, el] of Object.entries(elementos))
+    for (const v of el.vinculos) {
+      const par = elementos[v];
+      if (el.papel === "renvoi" && par && par.papel === "renvoi" && u < v)
+        fios.push([[u, Object.keys(el.bornes)[0]], [v, Object.keys(par.bornes)[0]]]);
+    }
   return { elementos, fios };
 }
 

@@ -83,6 +83,8 @@ def classificar(tipo, definicao):
     nomes_bornes = set(definicao["bornes"].values())
     arquivo = tipo.split("/")[-1].lower()
     texto = " ".join(definicao["nomes"])
+    if lt in ("next_report", "previous_report"):
+        return "renvoi", None, None            # referência de página: liga um fio entre folhas
     if lt == "simple" and nomes_bornes and nomes_bornes <= {"L", "N"}:
         return "fonte", None, None             # fonte L+N, ou só fase (L) ou só neutro (N)
     if {"L1", "L2", "L3"} <= nomes_bornes:
@@ -129,10 +131,10 @@ def classificar(tipo, definicao):
 def ler_circuito(caminho):
     raiz = ET.parse(caminho).getroot()
     defs = ler_definicoes(raiz)
-    diagrama = raiz.find("diagram")
+    diagramas = raiz.findall("diagram")      # todas as folhas do projeto
 
     elementos = {}
-    for e in diagrama.find("elements"):
+    for e in (e for dg in diagramas for e in dg.find("elements")):
         arquivo = e.attrib["type"].split("/")[-1]
         d = defs[arquivo]
         info = {}
@@ -160,7 +162,13 @@ def ler_circuito(caminho):
 
     fios = [((c.attrib["element1"], c.attrib["terminal1"]),
              (c.attrib["element2"], c.attrib["terminal2"]))
-            for c in diagrama.find("conductors")]
+            for dg in diagramas for c in dg.find("conductors")]
+    # Referência de página (renvoi de folio): o borne de cada ponta é o mesmo ponto elétrico
+    for u, el in elementos.items():
+        for v in el["vinculos"]:
+            par = elementos.get(v)
+            if el["papel"] == "renvoi" and par and par["papel"] == "renvoi" and u < v:
+                fios.append(((u, next(iter(el["bornes"]))), (v, next(iter(par["bornes"])))))
     return elementos, fios
 
 
