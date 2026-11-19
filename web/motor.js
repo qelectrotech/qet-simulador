@@ -256,10 +256,13 @@ class Simulador {
   }
   alcancaveis(nomeOrigem, papelFonte = "fonte", viz = null) {
     viz = viz || this.grafo();
+    // Comando alimentado pela fonte trifásica: qualquer fase vale como L, e o N dela como N
+    const extra = papelFonte === "fonte" ? ({ L: ["L1", "L2", "L3"], N: ["N"] }[nomeOrigem] || []) : [];
     const origem = [];
     for (const [u, e] of Object.entries(this.el))
-      if (e.papel === papelFonte)
-        for (const [t, n] of Object.entries(e.bornes)) if (n === nomeOrigem) origem.push(no(u, t));
+      for (const [t, n] of Object.entries(e.bornes))
+        if ((e.papel === papelFonte && n === nomeOrigem) || (e.papel === "fonte3f" && extra.includes(n)))
+          origem.push(no(u, t));
     const vistos = new Set(origem), fila = [...origem];
     while (fila.length) {
       const n = fila.shift();

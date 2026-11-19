@@ -268,8 +268,12 @@ class Simulador:
     # --- quais bornes estão "vivos" a partir de uma origem ----------
     def alcancaveis(self, nome_origem, papel_fonte="fonte", viz=None):
         viz = viz if viz is not None else self.grafo()
-        origem = [(u, t) for u, e in self.el.items() if e["papel"] == papel_fonte
-                  for t, n in e["bornes"].items() if n == nome_origem]
+        # Comando alimentado pela fonte trifásica: qualquer fase vale como L, e o N dela como N
+        extra = {"L": ("L1", "L2", "L3"), "N": ("N",)}.get(nome_origem, ()) if papel_fonte == "fonte" else ()
+        origem = [(u, t) for u, e in self.el.items()
+                  for t, n in e["bornes"].items()
+                  if (e["papel"] == papel_fonte and n == nome_origem)
+                  or (e["papel"] == "fonte3f" and n in extra)]
         vistos, fila = set(origem), deque(origem)
         while fila:
             n = fila.popleft()

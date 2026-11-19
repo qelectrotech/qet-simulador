@@ -100,8 +100,10 @@ Detalhes do formato: [`notas/formato-qet.md`](notas/formato-qet.md)
 ## Limitações atuais / Current limitations
 
 - Várias folhas: todas são desenhadas e simuladas juntas; contatos vinculados entre folhas funcionam.
-  Fios que passam de uma folha a outra pela referência de página (*renvoi de folio*) ainda sem teste com
-  arquivo real / *multi-sheet projects supported; folio reports not yet tested on a real file*
+  Fios que passam de uma folha a outra pela referência de página (*renvoi de folio*: Seta de saída /
+  Seta de entrada, vinculadas) também / *multi-sheet projects and folio reports supported*
+- Comando alimentado pela fonte trifásica: uma fase + N. Comando entre duas fases (ex.: 380 V) ainda não /
+  *control fed by phase + N of the 3-phase source; phase-to-phase control not yet*
 - Força: motores de 3 bornes e de 6 bornes (U1-V1-W1 / U2-V2-W2: identifica estrela, triângulo,
   enrolamentos abertos e ligação incorreta) / *3- and 6-terminal motors (star, delta, open windings,
   wrong connection)*
