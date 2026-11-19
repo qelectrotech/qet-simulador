@@ -38,9 +38,12 @@ function lerDefinicoes(projeto) {
           geo[t.getAttribute("uuid")] = [parseFloat(t.getAttribute("x") || 0),
                                          parseFloat(t.getAttribute("y") || 0)];
         }
+        // textos fixos do símbolo (ex.: BN, BU, BK do sensor)
+        const rotulos = todos(d, "text").map(x => [(x.getAttribute("text") || "").trim(),
+          parseFloat(x.getAttribute("x") || 0), parseFloat(x.getAttribute("y") || 0)]);
         defs[caminho.concat(c.getAttribute("name")).join("/")] = {
           link_type: d.getAttribute("link_type") || "simple",
-          kind, bornes, geo,
+          kind, bornes, geo, rotulos,
           nomes: todos(d, "name").map(texto),          // nome em cada idioma
         };
       }
@@ -48,6 +51,23 @@ function lerDefinicoes(projeto) {
   };
   percorrer(filho(projeto, "collection"), []);
   return defs;
+}
+
+function bornesSensor(def) {
+  /* Sensor de 3 fios (PNP): qual borne é +, - e saída. Pela numeração IEC (1 = +, 3 = -, 4 = saída)
+     ou, se os bornes não têm nome, pela cor escrita ao lado (BN = +, BU = -, BK = saída). */
+  const porNome = { 1: "+", 3: "-", 4: "saida" }, porCor = { BN: "+", BU: "-", BK: "saida" };
+  const r = {};
+  for (const [t, n] of Object.entries(def.bornes)) {
+    if (porNome[n]) r[porNome[n]] = t;
+    else if (!n) {
+      const [x, y] = def.geo[t];
+      const perto = (def.rotulos || []).filter(([txt]) => porCor[txt])
+        .map(([txt, rx, ry]) => [Math.abs(rx - x) + Math.abs(ry - y), txt]).sort((a, b) => a[0] - b[0]);
+      if (perto.length && perto[0][0] <= 20) r[porCor[perto[0][1]]] = t;
+    }
+  }
+  return Object.keys(r).length === 3 && Object.keys(def.bornes).length === 3 ? r : null;
 }
 
 function tipoBotoeira(arquivo, def) {
@@ -85,6 +105,8 @@ function classificar(tipo, def) {
   if (lt === "next_report" || lt === "previous_report")
     return ["renvoi", null, null];          // referência de página: liga um fio entre folhas
   const t = def.nomes.join(" ");
+  if (/capteur|sensor|sensore|detecteur/i.test(arq + " " + t) && bornesSensor(def))
+    return ["sensor", tipoBotoeira(arquivo, def)[0] || "NO", "sensor de 3 fios"];
   if (lt === "simple" && nomesBornes.size && [...nomesBornes].every(n => n === "L" || n === "N"))
     return ["fonte", null, null];            // fonte L+N, ou só fase (L) ou só neutro (N)
   if (["L", "N", "L+", "L-"].every(n => nomesBornes.has(n)))
@@ -137,6 +159,7 @@ function lerCircuito(doc) {
       vinculos: todos(e, "link_uuid").map(l => l.getAttribute("uuid")),
       tipo_contato: d.kind.type || "simple",
       trava: papel === "botoeira" && eEmergencia(tipo, d),
+      sensor: papel === "sensor" ? bornesSensor(d) : null,
       info,
     };
   }
@@ -184,6 +207,7 @@ class Simulador {
     this.t_desligada = Object.fromEntries(Object.keys(this.energizada).map(u => [u, Infinity]));
     this.disj_ligado = Object.fromEntries(de("disjuntor").map(u => [u, true]));
     this.disparado = Object.fromEntries(de("termico").map(u => [u, false]));
+    this.detectado = Object.fromEntries(de("sensor").map(u => [u, false]));
   }
 
   eTemporizador(bobina) {
@@ -266,7 +290,8 @@ class Simulador {
         if ((e.papel === papelFonte && n === nomeOrigem) || (e.papel === "fonte3f" && extra.includes(n)))
           origem.push(no(u, t));
     const conv = Object.keys(this.el).filter(u => this.el[u].papel === "fonte_cc");
-    if (!extra.length || !conv.length) return this._bfs(origem, viz);
+    const sens = Object.keys(this.el).filter(u => this.el[u].papel === "sensor");
+    if (!extra.length || !(conv.length || sens.length)) return this._bfs(origem, viz);
     // Fonte retificadora: com L e N na entrada, a saída L+ vale como L e a L- como N
     const borne = (u, nome) => Object.entries(this.el[u].bornes).filter(([, n]) => n === nome).map(([t]) => no(u, t));
     const base = { L: [], N: [] };
@@ -276,11 +301,18 @@ class Simulador {
           base.L.push(no(u, t));
         if ((e.papel === "fonte" || e.papel === "fonte3f") && n === "N") base.N.push(no(u, t));
       }
+    // Sensor PNP: alimentado (+ em L, - em N) e com a saída comutada -> saída vale como L
+    const sb = (u, f) => no(u, this.el[u].sensor[f]);
     let ativos = new Set();
     for (;;) {
-      const vL = this._bfs([...base.L, ...[...ativos].flatMap(u => borne(u, "L+"))], viz);
-      const vN = this._bfs([...base.N, ...[...ativos].flatMap(u => borne(u, "L-"))], viz);
+      const at = [...ativos];
+      const vL = this._bfs([...base.L, ...at.filter(u => conv.includes(u)).flatMap(u => borne(u, "L+")),
+                            ...at.filter(u => sens.includes(u)).map(u => sb(u, "saida"))], viz);
+      const vN = this._bfs([...base.N, ...at.filter(u => conv.includes(u)).flatMap(u => borne(u, "L-"))], viz);
       const novos = new Set(conv.filter(u => borne(u, "L").some(b => vL.has(b)) && borne(u, "N").some(b => vN.has(b))));
+      for (const u of sens)
+        if (vL.has(sb(u, "+")) && vN.has(sb(u, "-")) && this.detectado[u] !== (this.el[u].estado_normal === "NC"))
+          novos.add(u);
       if (novos.size === ativos.size && [...novos].every(u => ativos.has(u))) return nomeOrigem === "L" ? vL : vN;
       ativos = novos;
     }
@@ -422,6 +454,9 @@ class Simulador {
     const acesas = Object.entries(this.lampadas());
     if (acesas.length)
       txt += " | " + acesas.map(([u, v]) => `${this.el[u].nome || "lâmpada"}=${v ? "ACESA" : "apagada"}`).join(", ");
+    const det = Object.entries(this.detectado);
+    if (det.length)
+      txt += " | " + det.map(([u, v]) => `${this.el[u].nome || "sensor"}=${v ? "PEÇA" : "livre"}`).join(", ");
     const { motores, avisos } = this.forca();
     if (motores.length) txt += " | " + motores.join(", ");
     const viz = this.grafo();
@@ -445,6 +480,7 @@ class Simulador {
   protecao(u) {
     if (u in this.disj_ligado) this.disj_ligado[u] = !this.disj_ligado[u];
     else if (u in this.disparado) this.disparado[u] = !this.disparado[u];
+    else if (u in this.detectado) this.detectado[u] = !this.detectado[u];
     else return null;
     const s = this.resolver();
     return { situacao: s, disparos: this.disparosPorCurto() };

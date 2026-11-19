@@ -18,8 +18,9 @@ def rodar(arquivo, acoes):
             for v in ((not sim.pressionado[u],) if sim.el[u].get("trava") else (True, False)):
                 sim.pressionado[u] = v; sim.resolver(); msgs += sim.disparos_por_curto()
         elif tipo == "x":
-            u = nome_para(arg, ["disjuntor", "termico"])
+            u = nome_para(arg, ["disjuntor", "termico", "sensor"])
             if u in sim.disj_ligado: sim.disj_ligado[u] = not sim.disj_ligado[u]
+            elif u in sim.detectado: sim.detectado[u] = not sim.detectado[u]
             else: sim.disparado[u] = not sim.disparado[u]
             sim.resolver(); msgs += sim.disparos_por_curto()
         elif tipo == "t":

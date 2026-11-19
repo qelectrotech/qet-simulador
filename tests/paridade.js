@@ -18,7 +18,7 @@ function rodar(arquivo, acoes) {
       if (sim.el[u].trava) msgs = msgs.concat(sim.pressionar(u, !sim.pressionado[u]).disparos);
       else msgs = msgs.concat(sim.pressionar(u, true).disparos, sim.pressionar(u, false).disparos);
     } else if (tipo === "x") {
-      msgs = msgs.concat(sim.protecao(sim.uuidDe(arg, ["disjuntor", "termico"])).disparos);
+      msgs = msgs.concat(sim.protecao(sim.uuidDe(arg, ["disjuntor", "termico", "sensor"])).disparos);
     } else if (tipo === "t") {
       for (let i = 0; i < Math.round(arg / 0.1); i++) msgs = msgs.concat(sim.passo(0.1).disparos);
     }

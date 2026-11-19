@@ -102,6 +102,9 @@ Detalhes do formato: [`notas/formato-qet.md`](notas/formato-qet.md)
 - Várias folhas: todas são desenhadas e simuladas juntas; contatos vinculados entre folhas funcionam.
   Fios que passam de uma folha a outra pela referência de página (*renvoi de folio*: Seta de saída /
   Seta de entrada, vinculadas) também / *multi-sheet projects and folio reports supported*
+- Sensor de 3 fios (PNP, NA ou NF): bornes 1 (+), 3 (-), 4 (saída), ou bornes sem nome com as cores
+  BN/BU/BK escritas no símbolo. Só dá saída se estiver alimentado; um clique simula a peça /
+  *3-wire PNP sensors (1/3/4 or BN/BU/BK); output only when powered; click to place a part*
 - Comando alimentado pela fonte trifásica (uma fase + N) ou por fonte retificadora 24 Vcc
   ("Alterna monofásica > Contínua", bornes L, N, L+, L-: com L e N na entrada, L+ vale como fase e L- como
   neutro). Comando entre duas fases (ex.: 380 V) ainda não; a tensão das bobinas não é conferida /

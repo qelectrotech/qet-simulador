@@ -34,14 +34,36 @@ def ler_definicoes(raiz):
         nomes = [(n.text or "").strip() for n in d.iter("name")]  # nome em cada idioma
         geo = {t.attrib["uuid"]: (float(t.attrib.get("x", 0)), float(t.attrib.get("y", 0)))
                for t in d.iter("terminal")}
+        rotulos = [((t.attrib.get("text") or "").strip(), float(t.attrib.get("x", 0)), float(t.attrib.get("y", 0)))
+                   for t in d.iter("text")]
         defs[el.attrib["name"]] = {
-            "link_type": d.attrib.get("link_type", "simple"),
+            "rotulos": rotulos,              # textos fixos do símbolo (ex.: BN, BU, BK do sensor)
             "kind": kind,
             "bornes": bornes,
             "nomes": nomes,
             "geo": geo,                      # posição de cada borne no símbolo
+            "link_type": d.attrib.get("link_type", "simple"),
         }
     return defs
+
+
+def bornes_sensor(definicao):
+    """Sensor de 3 fios (PNP): qual borne é +, - e saída. Pela numeração IEC (1 = +, 3 = -, 4 = saída)
+    ou, se os bornes não têm nome, pela cor escrita ao lado (BN = +, BU = -, BK = saída).
+    Devolve {"+": uuid, "-": uuid, "saida": uuid} ou None."""
+    por_nome = {"1": "+", "3": "-", "4": "saida"}
+    por_cor = {"BN": "+", "BU": "-", "BK": "saida"}
+    r = {}
+    for t, n in definicao["bornes"].items():
+        if n in por_nome:
+            r[por_nome[n]] = t
+        elif not n:
+            x, y = definicao["geo"][t]
+            perto = [(abs(rx - x) + abs(ry - y), txt) for txt, rx, ry in definicao.get("rotulos", [])
+                     if txt in por_cor]
+            if perto and min(perto)[0] <= 20:
+                r[por_cor[min(perto)[1]]] = t
+    return r if len(r) == 3 and len(definicao["bornes"]) == 3 else None
 
 
 def tipo_botoeira(nome_arquivo, definicao):
@@ -85,6 +107,9 @@ def classificar(tipo, definicao):
     texto = " ".join(definicao["nomes"])
     if lt in ("next_report", "previous_report"):
         return "renvoi", None, None            # referência de página: liga um fio entre folhas
+    if re.search(r"capteur|sensor|sensore|detecteur", arquivo + " " + texto, re.I) and bornes_sensor(definicao):
+        estado = tipo_botoeira(arquivo, definicao)[0] or "NO"
+        return "sensor", estado, "sensor de 3 fios"
     if lt == "simple" and nomes_bornes and nomes_bornes <= {"L", "N"}:
         return "fonte", None, None             # fonte L+N, ou só fase (L) ou só neutro (N)
     if {"L", "N", "L+", "L-"} <= nomes_bornes:
@@ -154,6 +179,7 @@ def ler_circuito(caminho):
             "vinculos": [l.attrib["uuid"] for l in e.iter("link_uuid")],
             "tipo_contato": d["kind"].get("type", "simple"),  # simple, delayOn, delayOff
             "trava": papel == "botoeira" and e_emergencia(e.attrib["type"], d),
+            "sensor": bornes_sensor(d) if papel == "sensor" else None,
             "info": info,
         }
 
@@ -194,6 +220,7 @@ class Simulador:
         # Proteções: disjuntor começa ligado; térmico começa sem disparo
         self.disj_ligado = {u: True for u, e in elementos.items() if e["papel"] == "disjuntor"}
         self.disparado = {u: False for u, e in elementos.items() if e["papel"] == "termico"}
+        self.detectado = {u: False for u, e in elementos.items() if e["papel"] == "sensor"}
 
     def e_temporizador(self, bobina):
         """Uma bobina é temporizador se algum contato dela for retardado."""
@@ -277,7 +304,8 @@ class Simulador:
                   if (e["papel"] == papel_fonte and n == nome_origem)
                   or (e["papel"] == "fonte3f" and n in extra)]
         conv = [u for u, e in self.el.items() if e["papel"] == "fonte_cc"]
-        if not extra or not conv:
+        sens = [u for u, e in self.el.items() if e["papel"] == "sensor"]
+        if not extra or not (conv or sens):
             return self._bfs(origem, viz)
         # Fonte retificadora: com L e N na entrada, a saída L+ vale como L e a L- como N
         borne = lambda u, nome: [(u, t) for t, n in self.el[u]["bornes"].items() if n == nome]
@@ -285,11 +313,16 @@ class Simulador:
                       if (e["papel"] == "fonte" and n == "L") or (e["papel"] == "fonte3f" and n in ("L1", "L2", "L3"))],
                 "N": [(u, t) for u, e in self.el.items() for t, n in e["bornes"].items()
                       if e["papel"] in ("fonte", "fonte3f") and n == "N"]}
+        # Sensor PNP: alimentado (+ em L, - em N) e com a saída comutada -> saída vale como L
+        sb = lambda u, f: (u, self.el[u]["sensor"][f])
         ativos = set()
         while True:
-            vL = self._bfs(base["L"] + [b for u in ativos for b in borne(u, "L+")], viz)
-            vN = self._bfs(base["N"] + [b for u in ativos for b in borne(u, "L-")], viz)
+            vL = self._bfs(base["L"] + [b for u in ativos if u in conv for b in borne(u, "L+")]
+                           + [sb(u, "saida") for u in ativos if u in sens], viz)
+            vN = self._bfs(base["N"] + [b for u in ativos if u in conv for b in borne(u, "L-")], viz)
             novos = {u for u in conv if set(borne(u, "L")) & vL and set(borne(u, "N")) & vN}
+            novos |= {u for u in sens if sb(u, "+") in vL and sb(u, "-") in vN
+                      and self.detectado[u] != (self.el[u]["estado_normal"] == "NC")}
             if novos == ativos:
                 return vL if nome_origem == "L" else vN
             ativos = novos
@@ -439,6 +472,9 @@ class Simulador:
         if acesas:
             txt += " | " + ", ".join(f"{self.el[u]['nome'] or 'lâmpada'}={'ACESA' if v else 'apagada'}"
                                      for u, v in acesas.items())
+        if self.detectado:
+            txt += " | " + ", ".join(f"{self.el[u]['nome'] or 'sensor'}={'PEÇA' if v else 'livre'}"
+                                     for u, v in self.detectado.items())
         motores, avisos = self.forca()
         if motores:
             txt += " | " + ", ".join(motores)
@@ -486,6 +522,9 @@ class Simulador:
             elif u in self.disparado:
                 self.disparado[u] = not self.disparado[u]
                 acao = "SOBRECARGA" if self.disparado[u] else "rearma   "
+            elif u in self.detectado:
+                self.detectado[u] = not self.detectado[u]
+                acao = "PEÇA     " if self.detectado[u] else "sem peça "
             else:
                 continue
             situacao = self.resolver()

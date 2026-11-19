@@ -64,8 +64,8 @@
   <aside id="painel">
     <h2>Como usar</h2>
     <div>Clique e segure uma <b>botoeira</b> para pressioná-la. <b>Shift+clique</b> mantém pressionada.
-      Clique no <b>disjuntor</b> para ligar/desligar, no <b>relé térmico</b> para simular sobrecarga
-      e na <b>parada de emergência</b> para travar/destravar.</div>
+      Clique no <b>disjuntor</b> para ligar/desligar, no <b>relé térmico</b> para simular sobrecarga,
+      na <b>parada de emergência</b> para travar/destravar e no <b>sensor</b> para colocar/tirar a peça.</div>
     <h2>Estado</h2><div id="estado"></div>
     <div id="temporizadores"></div>
     <h2>Eventos</h2><div id="log"></div>
@@ -522,7 +522,7 @@ function prepararSimulacao(doc) {
     g.insertBefore(r, g.firstChild);
     VISTA.grupos[u] = { g, r, bb };
     // Elementos clicáveis: toda a área do símbolo recebe o clique, não só as linhas
-    if (["botoeira", "disjuntor", "termico"].includes(e.papel)) r.style.pointerEvents = "all";
+    if (["botoeira", "disjuntor", "termico", "sensor"].includes(e.papel)) r.style.pointerEvents = "all";
     if (e.papel === "botoeira" && e.trava) {
       // Parada de emergência: um clique trava, outro destrava
       g.classList.add("clicavel");
@@ -543,12 +543,12 @@ function prepararSimulacao(doc) {
       const soltar = () => { if (sim.pressionado[u] && !g.dataset.travada) acionar(u, false); };
       g.addEventListener("pointerup", soltar);
       g.addEventListener("pointercancel", soltar);
-    } else if (e.papel === "disjuntor" || e.papel === "termico") {
+    } else if (["disjuntor", "termico", "sensor"].includes(e.papel)) {
       g.classList.add("clicavel");
       g.addEventListener("click", () => {
         const res = sim.protecao(u);
-        const txt = e.papel === "disjuntor"
-          ? `${e.nome} ${sim.disj_ligado[u] ? "ligado" : "desligado"}`
+        const txt = e.papel === "disjuntor" ? `${e.nome} ${sim.disj_ligado[u] ? "ligado" : "desligado"}`
+          : e.papel === "sensor" ? `${e.nome || "sensor"}: ${sim.detectado[u] ? "peça na frente" : "sem peça"}`
           : `${e.nome} ${sim.disparado[u] ? "SOBRECARGA (disparou)" : "rearmado"}`;
         log(txt);
         depois(res);
@@ -616,6 +616,7 @@ function atualizar() {
     if ((e.papel === "contato" || e.papel === "botoeira") && sim.atuado(u)) cor = "rgba(26,127,55,.22)";
     if (e.papel === "disjuntor" && !sim.disj_ligado[u]) cor = "rgba(120,120,120,.30)";
     if (e.papel === "termico" && sim.disparado[u]) cor = "rgba(255,140,0,.35)";
+    if (e.papel === "sensor" && sim.detectado[u]) cor = "rgba(26,127,55,.22)";   // peça na frente
     if (e.papel === "lampada")              // apagada: cor do símbolo em cinza
       v.g.style.filter = en.lampadas[u] ? "drop-shadow(0 0 4px " + (v.g.dataset.cor || "gold") + ")" : "grayscale(1) opacity(.7)";
     if (e.papel === "lampada" && en.lampadas[u]) {
@@ -644,6 +645,8 @@ function atualizar() {
     linhas.push(`<div class="${v ? "ok" : ""}">${sim.el[u].nome || "bobina"}: ${v ? "ENERGIZADA" : "desligada"}</div>`);
   for (const [u, v] of Object.entries(en.lampadas))
     linhas.push(`<div class="${v ? "ok" : ""}">${sim.el[u].nome || "lâmpada"}: ${v ? "ACESA" : "apagada"}</div>`);
+  for (const [u, v] of Object.entries(sim.detectado))
+    linhas.push(`<div class="${v ? "ok" : ""}">${sim.el[u].nome || "sensor"}: ${v ? "peça na frente" : "sem peça"}</div>`);
   for (const [u, m] of Object.entries(en.motores))
     linhas.push(`<div class="${m.gira ? "ok" : m.txt === "parado" ? "" : "alerta"}">${sim.el[u].nome || "motor"}: ${m.txt}</div>`);
   const est = sim.estado();
