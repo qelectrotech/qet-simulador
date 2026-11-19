@@ -87,6 +87,8 @@ def classificar(tipo, definicao):
         return "renvoi", None, None            # referência de página: liga um fio entre folhas
     if lt == "simple" and nomes_bornes and nomes_bornes <= {"L", "N"}:
         return "fonte", None, None             # fonte L+N, ou só fase (L) ou só neutro (N)
+    if {"L", "N", "L+", "L-"} <= nomes_bornes:
+        return "fonte_cc", None, None          # fonte retificadora: entrada L/N, saída L+/L-
     if {"L1", "L2", "L3"} <= nomes_bornes:
         return "fonte3f", None, None
     if lt == "master" and kind.get("type") == "coil":
@@ -274,6 +276,25 @@ class Simulador:
                   for t, n in e["bornes"].items()
                   if (e["papel"] == papel_fonte and n == nome_origem)
                   or (e["papel"] == "fonte3f" and n in extra)]
+        conv = [u for u, e in self.el.items() if e["papel"] == "fonte_cc"]
+        if not extra or not conv:
+            return self._bfs(origem, viz)
+        # Fonte retificadora: com L e N na entrada, a saída L+ vale como L e a L- como N
+        borne = lambda u, nome: [(u, t) for t, n in self.el[u]["bornes"].items() if n == nome]
+        base = {"L": [(u, t) for u, e in self.el.items() for t, n in e["bornes"].items()
+                      if (e["papel"] == "fonte" and n == "L") or (e["papel"] == "fonte3f" and n in ("L1", "L2", "L3"))],
+                "N": [(u, t) for u, e in self.el.items() for t, n in e["bornes"].items()
+                      if e["papel"] in ("fonte", "fonte3f") and n == "N"]}
+        ativos = set()
+        while True:
+            vL = self._bfs(base["L"] + [b for u in ativos for b in borne(u, "L+")], viz)
+            vN = self._bfs(base["N"] + [b for u in ativos for b in borne(u, "L-")], viz)
+            novos = {u for u in conv if set(borne(u, "L")) & vL and set(borne(u, "N")) & vN}
+            if novos == ativos:
+                return vL if nome_origem == "L" else vN
+            ativos = novos
+
+    def _bfs(self, origem, viz):
         vistos, fila = set(origem), deque(origem)
         while fila:
             n = fila.popleft()

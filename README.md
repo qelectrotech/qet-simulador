@@ -102,8 +102,11 @@ Detalhes do formato: [`notas/formato-qet.md`](notas/formato-qet.md)
 - Várias folhas: todas são desenhadas e simuladas juntas; contatos vinculados entre folhas funcionam.
   Fios que passam de uma folha a outra pela referência de página (*renvoi de folio*: Seta de saída /
   Seta de entrada, vinculadas) também / *multi-sheet projects and folio reports supported*
-- Comando alimentado pela fonte trifásica: uma fase + N. Comando entre duas fases (ex.: 380 V) ainda não /
-  *control fed by phase + N of the 3-phase source; phase-to-phase control not yet*
+- Comando alimentado pela fonte trifásica (uma fase + N) ou por fonte retificadora 24 Vcc
+  ("Alterna monofásica > Contínua", bornes L, N, L+, L-: com L e N na entrada, L+ vale como fase e L- como
+  neutro). Comando entre duas fases (ex.: 380 V) ainda não; a tensão das bobinas não é conferida /
+  *control fed by phase + N, or by an AC/DC supply (L, N, L+, L-); phase-to-phase control not yet;
+  coil voltage is not checked*
 - Força: motores de 3 bornes e de 6 bornes (U1-V1-W1 / U2-V2-W2: identifica estrela, triângulo,
   enrolamentos abertos e ligação incorreta) / *3- and 6-terminal motors (star, delta, open windings,
   wrong connection)*

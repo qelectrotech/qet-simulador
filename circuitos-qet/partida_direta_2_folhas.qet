@@ -24,25 +24,22 @@
     <diagram colsize="60" indexrev="" displaycols="true" plant="" locmach="" title="" rows="8" rowsize="80" height="660" filename="" order="1" date="null" author="" version="0.100.0" freezeNewConductor="false" cols="17" displayAt="bottom" auto_page_num="" folio="%id/%total" displayrows="true" freezeNewElement="false">
         <defaultconductor num="_" conductor_color="" type="multi" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" bicolor="false" condsize="1" numsize="7" tension_protocol="" bus="" dash-size="1" conductor_section="" vertical-alignment="AlignRight" function="" horizontal-alignment="AlignBottom" text_color="#000000" cable="" formula=""/>
         <elements>
-            <element type="embed://import/10_electric/10_allpole/200_fuses_protective_gears/12_magneto_thermal_circuit_breakers/dis_mag_term_4f-1.elmt" x="430" y="230" z="10" freezeLabel="false" prefix="Q" uuid="{920889a8-b0d2-46ce-9315-1d67cbe3c47e}" orientation="0">
+            <element type="embed://import/10_electric/10_allpole/110_network_supplies/src_3p_pe_n.elmt" x="230" y="100" z="10" freezeLabel="false" prefix="" uuid="{76d7fcf0-0bbc-47df-bb27-8c730689d0f0}" orientation="0">
                 <terminals>
-                    <terminal x="-20" y="-36" id="0" orientation="0"/>
-                    <terminal x="0" y="-36" id="1" orientation="0"/>
-                    <terminal x="20" y="-36" id="2" orientation="0"/>
-                    <terminal x="40" y="-36" id="3" orientation="0"/>
-                    <terminal x="-20" y="36" id="4" orientation="2"/>
-                    <terminal x="0" y="36" id="5" orientation="2"/>
-                    <terminal x="20" y="36" id="6" orientation="2"/>
-                    <terminal x="40" y="36" id="7" orientation="2"/>
+                    <terminal x="6" y="-40" id="0" orientation="1"/>
+                    <terminal x="6" y="-20" id="1" orientation="1"/>
+                    <terminal x="6" y="0" id="2" orientation="1"/>
+                    <terminal x="6" y="20" id="3" orientation="1"/>
+                    <terminal x="6" y="40" id="4" orientation="1"/>
                 </terminals>
                 <inputs/>
                 <elementInformations>
-                    <elementInformation name="formula" show="1">Q1</elementInformation>
-                    <elementInformation name="label" show="1">Q1</elementInformation>
+                    <elementInformation name="formula" show="1">FONTE</elementInformation>
+                    <elementInformation name="label" show="1">FONTE</elementInformation>
                 </elementInformations>
                 <dynamic_texts>
-                    <dynamic_elmt_text frame="false" Halignment="AlignLeft" x="60" y="-11.5" rotation="0" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" text_width="-1" uuid="{748d052d-ab79-489b-9b37-da710e2ebb9b}" keep_visual_rotation="false" text_from="ElementInfo" Valignment="AlignTop">
-                        <text>Q1</text>
+                    <dynamic_elmt_text frame="false" Halignment="AlignLeft" x="3" y="-71.95" rotation="0" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" text_width="-1" uuid="{17ded540-5640-4460-a17f-08d6e106d421}" keep_visual_rotation="false" text_from="ElementInfo" Valignment="AlignTop">
+                        <text>FONTE</text>
                         <info_name>label</info_name>
                     </dynamic_elmt_text>
                 </dynamic_texts>
@@ -50,10 +47,10 @@
             </element>
             <element type="embed://import/10_electric/10_allpole/391_consumers_actuators/10_engines/moto_ac_3ph.elmt" x="450" y="580" z="10" freezeLabel="false" prefix="M" uuid="{85f86443-e701-469d-982b-2d71fcfbac97}" orientation="0">
                 <terminals>
-                    <terminal x="-20" y="-36" id="8" orientation="0"/>
-                    <terminal x="0" y="-36" id="9" orientation="0"/>
-                    <terminal x="20" y="-36" id="10" orientation="0"/>
-                    <terminal x="40" y="-36" id="11" orientation="0"/>
+                    <terminal x="-20" y="-36" id="5" orientation="0"/>
+                    <terminal x="0" y="-36" id="6" orientation="0"/>
+                    <terminal x="20" y="-36" id="7" orientation="0"/>
+                    <terminal x="40" y="-36" id="8" orientation="0"/>
                 </terminals>
                 <inputs/>
                 <elementInformations>
@@ -70,14 +67,14 @@
             </element>
             <element type="embed://import/10_electric/10_allpole/310_relays_contactors_contacts/02_contacts_cross_referencing/02_power_contacts/com_puiss6.elmt" x="440" y="350" z="10" freezeLabel="false" prefix="S" uuid="{42599d49-e110-4c9a-88b4-0e118b395db1}" orientation="0">
                 <terminals>
-                    <terminal x="-30" y="-16" id="12" orientation="0"/>
-                    <terminal x="-10" y="-16" id="13" orientation="0"/>
-                    <terminal x="10" y="-16" id="14" orientation="0"/>
-                    <terminal x="30" y="-16" id="15" orientation="0"/>
-                    <terminal x="-30" y="16" id="16" orientation="2"/>
-                    <terminal x="-10" y="16" id="17" orientation="2"/>
-                    <terminal x="10" y="16" id="18" orientation="2"/>
-                    <terminal x="30" y="16" id="19" orientation="2"/>
+                    <terminal x="-30" y="-16" id="9" orientation="0"/>
+                    <terminal x="-10" y="-16" id="10" orientation="0"/>
+                    <terminal x="10" y="-16" id="11" orientation="0"/>
+                    <terminal x="30" y="-16" id="12" orientation="0"/>
+                    <terminal x="-30" y="16" id="13" orientation="2"/>
+                    <terminal x="-10" y="16" id="14" orientation="2"/>
+                    <terminal x="10" y="16" id="15" orientation="2"/>
+                    <terminal x="30" y="16" id="16" orientation="2"/>
                 </terminals>
                 <inputs/>
                 <links_uuids>
@@ -91,38 +88,21 @@
                 </dynamic_texts>
                 <texts_groups/>
             </element>
-            <element type="embed://import/10_electric/10_allpole/110_network_supplies/src_3p_pe_n.elmt" x="230" y="100" z="10" freezeLabel="false" prefix="" uuid="{76d7fcf0-0bbc-47df-bb27-8c730689d0f0}" orientation="0">
+            <element type="embed://import/10_electric/10_allpole/330_transformers_power_supplies/30_power_supplies/ac2_dc.elmt" x="520" y="90" z="10" freezeLabel="false" prefix="G" uuid="{512a719b-9dfa-421a-976c-358582541fd9}" orientation="0">
                 <terminals>
-                    <terminal x="6" y="-40" id="20" orientation="1"/>
-                    <terminal x="6" y="-20" id="21" orientation="1"/>
-                    <terminal x="6" y="0" id="22" orientation="1"/>
-                    <terminal x="6" y="20" id="23" orientation="1"/>
-                    <terminal x="6" y="40" id="24" orientation="1"/>
+                    <terminal x="-16" y="-10" id="17" orientation="3"/>
+                    <terminal x="16" y="-10" id="18" orientation="1"/>
+                    <terminal x="-16" y="0" id="19" orientation="3"/>
+                    <terminal x="16" y="0" id="20" orientation="1"/>
                 </terminals>
                 <inputs/>
                 <elementInformations>
-                    <elementInformation name="formula" show="1">FONTE</elementInformation>
-                    <elementInformation name="label" show="1">FONTE</elementInformation>
+                    <elementInformation name="formula" show="1">FONTE DC 24 V</elementInformation>
+                    <elementInformation name="label" show="1">FONTE DC 24 V</elementInformation>
                 </elementInformations>
                 <dynamic_texts>
-                    <dynamic_elmt_text frame="false" Halignment="AlignLeft" x="3" y="-71.95" rotation="0" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" text_width="-1" uuid="{17ded540-5640-4460-a17f-08d6e106d421}" keep_visual_rotation="false" text_from="ElementInfo" Valignment="AlignTop">
-                        <text>FONTE</text>
-                        <info_name>label</info_name>
-                    </dynamic_elmt_text>
-                </dynamic_texts>
-                <texts_groups/>
-            </element>
-            <element type="embed://import/10_electric/10_allpole/100_folio_referencing/02going_arrow.elmt" x="580" y="120" z="10" freezeLabel="false" prefix="" uuid="{159f45f6-3368-4d70-96bc-2aa25234f74e}" orientation="0">
-                <terminals>
-                    <terminal x="-9" y="0" id="25" orientation="3"/>
-                </terminals>
-                <inputs/>
-                <links_uuids>
-                    <link_uuid uuid="{ffc99bfb-08e0-431e-a211-c3e8ba610e8e}"/>
-                </links_uuids>
-                <dynamic_texts>
-                    <dynamic_elmt_text frame="false" Halignment="AlignLeft" x="6" y="-11.5" rotation="0" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" text_width="-1" uuid="{295d787d-662b-442c-bb2a-18cac54f0153}" keep_visual_rotation="true" text_from="ElementInfo" Valignment="AlignTop">
-                        <text></text>
+                    <dynamic_elmt_text frame="false" Halignment="AlignLeft" x="-16" y="-44.33" rotation="0" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" text_width="-1" uuid="{814a1f71-5e3d-46cb-9664-e211ab5ce4f7}" keep_visual_rotation="false" text_from="ElementInfo" Valignment="AlignTop">
+                        <text>FONTE DC 24 V</text>
                         <info_name>label</info_name>
                     </dynamic_elmt_text>
                 </dynamic_texts>
@@ -130,7 +110,7 @@
             </element>
             <element type="embed://import/10_electric/10_allpole/100_folio_referencing/02going_arrow.elmt" x="580" y="60" z="10" freezeLabel="false" prefix="" uuid="{6a74f62f-3beb-4017-a256-326db881f4dd}" orientation="0">
                 <terminals>
-                    <terminal x="-9" y="0" id="26" orientation="3"/>
+                    <terminal x="-9" y="0" id="21" orientation="3"/>
                 </terminals>
                 <inputs/>
                 <links_uuids>
@@ -138,7 +118,47 @@
                 </links_uuids>
                 <dynamic_texts>
                     <dynamic_elmt_text frame="false" Halignment="AlignLeft" x="6" y="-11.5" rotation="0" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" text_width="-1" uuid="{f4875bea-96a7-49d0-bd9a-01597d7d3b73}" keep_visual_rotation="true" text_from="ElementInfo" Valignment="AlignTop">
-                        <text></text>
+                        <text>2-A5</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element type="embed://import/10_electric/10_allpole/100_folio_referencing/02going_arrow.elmt" x="580" y="120" z="10" freezeLabel="false" prefix="" uuid="{159f45f6-3368-4d70-96bc-2aa25234f74e}" orientation="0">
+                <terminals>
+                    <terminal x="-9" y="0" id="22" orientation="3"/>
+                </terminals>
+                <inputs/>
+                <links_uuids>
+                    <link_uuid uuid="{ffc99bfb-08e0-431e-a211-c3e8ba610e8e}"/>
+                </links_uuids>
+                <dynamic_texts>
+                    <dynamic_elmt_text frame="false" Halignment="AlignLeft" x="6" y="-11.5" rotation="0" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" text_width="-1" uuid="{295d787d-662b-442c-bb2a-18cac54f0153}" keep_visual_rotation="true" text_from="ElementInfo" Valignment="AlignTop">
+                        <text>2-G5</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element type="embed://import/10_electric/10_allpole/200_fuses_protective_gears/12_magneto_thermal_circuit_breakers/dis_mag_term_4f-1.elmt" x="430" y="230" z="10" freezeLabel="false" prefix="Q" uuid="{920889a8-b0d2-46ce-9315-1d67cbe3c47e}" orientation="0">
+                <terminals>
+                    <terminal x="-20" y="-36" id="23" orientation="0"/>
+                    <terminal x="0" y="-36" id="24" orientation="0"/>
+                    <terminal x="20" y="-36" id="25" orientation="0"/>
+                    <terminal x="40" y="-36" id="26" orientation="0"/>
+                    <terminal x="-20" y="36" id="27" orientation="2"/>
+                    <terminal x="0" y="36" id="28" orientation="2"/>
+                    <terminal x="20" y="36" id="29" orientation="2"/>
+                    <terminal x="40" y="36" id="30" orientation="2"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="formula" show="1">Q1</elementInformation>
+                    <elementInformation name="label" show="1">Q1</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text frame="false" Halignment="AlignLeft" x="60" y="-11.5" rotation="0" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" text_width="-1" uuid="{748d052d-ab79-489b-9b37-da710e2ebb9b}" keep_visual_rotation="false" text_from="ElementInfo" Valignment="AlignTop">
+                        <text>Q1</text>
                         <info_name>label</info_name>
                     </dynamic_elmt_text>
                 </dynamic_texts>
@@ -146,12 +166,12 @@
             </element>
             <element type="embed://import/10_electric/10_allpole/200_fuses_protective_gears/30_thermal_relays/relais_therm4_1_wide.elmt" x="430" y="440" z="10" freezeLabel="false" prefix="F" uuid="{e22603af-2b83-48a6-93b9-28ae3f5f3d80}" orientation="0">
                 <terminals>
-                    <terminal x="0" y="-17" id="27" orientation="0"/>
-                    <terminal x="20" y="-17" id="28" orientation="0"/>
-                    <terminal x="40" y="-17" id="29" orientation="0"/>
-                    <terminal x="0" y="17" id="30" orientation="2"/>
-                    <terminal x="20" y="17" id="31" orientation="2"/>
-                    <terminal x="40" y="17" id="32" orientation="2"/>
+                    <terminal x="0" y="-17" id="31" orientation="0"/>
+                    <terminal x="20" y="-17" id="32" orientation="0"/>
+                    <terminal x="40" y="-17" id="33" orientation="0"/>
+                    <terminal x="0" y="17" id="34" orientation="2"/>
+                    <terminal x="20" y="17" id="35" orientation="2"/>
+                    <terminal x="40" y="17" id="36" orientation="2"/>
                 </terminals>
                 <inputs/>
                 <links_uuids>
@@ -177,10 +197,7 @@
             </element>
         </elements>
         <conductors>
-            <conductor num="_" conductor_color="" type="multi" element2_name="Three-pole source + PE +N" x="0" y="0" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" element1_name="Going arrow" bicolor="false" element1="{6a74f62f-3beb-4017-a256-326db881f4dd}" condsize="1" numsize="7" element2="{76d7fcf0-0bbc-47df-bb27-8c730689d0f0}" tension_protocol="" dash-size="1" bus="" freezeLabel="false" conductor_section="" vertical-alignment="AlignRight" terminal1="{975add6f-4ba5-44af-a4c0-e1f1c2024601}" terminalname1="1" terminal2="{6996d331-855c-4aaa-9dd0-02ca5028d882}" terminalname2="L1" element2_label="FONTE" element1_label="" function="" horizontal-alignment="AlignBottom" text_color="#000000" formula="" cable="">
-                <sequentialNumbers/>
-            </conductor>
-            <conductor num="_" conductor_color="" type="multi" element2_name="Thermal relay" x="0" y="0" element2_linked="" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" element1_name="AC MOTOR 3-Phases" bicolor="false" element1="{85f86443-e701-469d-982b-2d71fcfbac97}" condsize="1" element2="{e22603af-2b83-48a6-93b9-28ae3f5f3d80}" numsize="7" tension_protocol="" dash-size="1" bus="" freezeLabel="false" conductor_section="" vertical-alignment="AlignRight" terminal1="{473f8a15-f933-4bfb-a9d6-1d1aaa5eb581}" terminalname1="" terminal2="{aa3ed724-f891-4fb1-94f3-fe9e1be7e89f}" terminalname2="" element2_label="F1" element1_label="M1" function="" horizontal-alignment="AlignBottom" text_color="#000000" formula="" cable="">
+            <conductor num="_" conductor_color="" type="multi" element2_name="AC MOTOR 3-Phases" x="0" y="0" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" element1_name="Three-pole source + PE +N" bicolor="false" element1="{76d7fcf0-0bbc-47df-bb27-8c730689d0f0}" condsize="1" numsize="7" element2="{85f86443-e701-469d-982b-2d71fcfbac97}" tension_protocol="" dash-size="1" bus="" freezeLabel="false" conductor_section="" vertical-alignment="AlignRight" terminal1="{2954e6c9-5956-4ddd-83d6-f7cbfc729027}" terminalname1="PE" terminal2="{74dd3752-ddc2-4d12-9295-f51d85d2b655}" terminalname2="" element2_label="M1" element1_label="FONTE" function="" horizontal-alignment="AlignBottom" text_color="#000000" formula="" cable="">
                 <sequentialNumbers/>
             </conductor>
             <conductor num="_" conductor_color="" type="multi" element2_name="Magneto-thermal circuit breaker" x="0" y="0" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" element1_name="Three-pole source + PE +N" bicolor="false" element1="{76d7fcf0-0bbc-47df-bb27-8c730689d0f0}" condsize="1" numsize="7" element2="{920889a8-b0d2-46ce-9315-1d67cbe3c47e}" tension_protocol="" dash-size="1" bus="" freezeLabel="false" conductor_section="" vertical-alignment="AlignRight" terminal1="{1ca64835-095b-4f91-943e-829d6702e206}" terminalname1="N" terminal2="{dccfc46c-2fc7-4856-b1cb-a3eec2b602fe}" terminalname2="N.in" element2_label="Q1" element1_label="FONTE" function="" horizontal-alignment="AlignBottom" text_color="#000000" formula="" cable="">
@@ -189,37 +206,19 @@
             <conductor num="_" conductor_color="" type="multi" element2_name="Magneto-thermal circuit breaker" x="0" element1_linked="K1" y="0" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" element1_name="Contact power contactor" bicolor="false" element1="{42599d49-e110-4c9a-88b4-0e118b395db1}" condsize="1" element2="{920889a8-b0d2-46ce-9315-1d67cbe3c47e}" numsize="7" tension_protocol="" dash-size="1" bus="" freezeLabel="false" conductor_section="" vertical-alignment="AlignRight" terminal1="{f91e5684-8632-44e5-b36b-99f2aac5d15d}" terminalname1="" terminal2="{baaf1b27-f736-4d44-9b74-759c26b4859a}" terminalname2="6" element2_label="Q1" element1_label="" function="" horizontal-alignment="AlignBottom" text_color="#000000" formula="" cable="">
                 <sequentialNumbers/>
             </conductor>
-            <conductor num="_" conductor_color="" type="multi" element2_name="AC MOTOR 3-Phases" x="0" y="0" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" element1_name="Three-pole source + PE +N" bicolor="false" element1="{76d7fcf0-0bbc-47df-bb27-8c730689d0f0}" condsize="1" numsize="7" element2="{85f86443-e701-469d-982b-2d71fcfbac97}" tension_protocol="" dash-size="1" bus="" freezeLabel="false" conductor_section="" vertical-alignment="AlignRight" terminal1="{2954e6c9-5956-4ddd-83d6-f7cbfc729027}" terminalname1="PE" terminal2="{74dd3752-ddc2-4d12-9295-f51d85d2b655}" terminalname2="" element2_label="M1" element1_label="FONTE" function="" horizontal-alignment="AlignBottom" text_color="#000000" formula="" cable="">
-                <sequentialNumbers/>
-            </conductor>
-            <conductor num="_" conductor_color="" type="multi" element2_name="Magneto-thermal circuit breaker" x="0" element1_linked="K1" y="0" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" element1_name="Contact power contactor" bicolor="false" element1="{42599d49-e110-4c9a-88b4-0e118b395db1}" condsize="1" element2="{920889a8-b0d2-46ce-9315-1d67cbe3c47e}" numsize="7" tension_protocol="" dash-size="1" bus="" freezeLabel="false" conductor_section="" vertical-alignment="AlignRight" terminal1="{84aa28c7-3ac0-445e-bd10-a7537643425e}" terminalname1="" terminal2="{3a71d8b8-b288-40ea-995c-646c276cbece}" terminalname2="N.out" element2_label="Q1" element1_label="" function="" horizontal-alignment="AlignBottom" text_color="#000000" formula="" cable="">
+            <conductor num="_" conductor_color="" type="multi" element2_name="Thermal relay" x="0" y="0" element2_linked="" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" element1_name="AC MOTOR 3-Phases" bicolor="false" element1="{85f86443-e701-469d-982b-2d71fcfbac97}" condsize="1" element2="{e22603af-2b83-48a6-93b9-28ae3f5f3d80}" numsize="7" tension_protocol="" dash-size="1" bus="" freezeLabel="false" conductor_section="" vertical-alignment="AlignRight" terminal1="{473f8a15-f933-4bfb-a9d6-1d1aaa5eb581}" terminalname1="" terminal2="{aa3ed724-f891-4fb1-94f3-fe9e1be7e89f}" terminalname2="" element2_label="F1" element1_label="M1" function="" horizontal-alignment="AlignBottom" text_color="#000000" formula="" cable="">
                 <sequentialNumbers/>
             </conductor>
             <conductor num="_" conductor_color="" type="multi" element2_name="Thermal relay" x="0" y="0" element2_linked="" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" element1_name="AC MOTOR 3-Phases" bicolor="false" element1="{85f86443-e701-469d-982b-2d71fcfbac97}" condsize="1" element2="{e22603af-2b83-48a6-93b9-28ae3f5f3d80}" numsize="7" tension_protocol="" dash-size="1" bus="" freezeLabel="false" conductor_section="" vertical-alignment="AlignRight" terminal1="{4591450c-f9a4-41e4-8982-4a077e29fd7f}" terminalname1="" terminal2="{022325ec-692c-456e-b042-a99cca275c89}" terminalname2="" element2_label="F1" element1_label="M1" function="" horizontal-alignment="AlignBottom" text_color="#000000" formula="" cable="">
                 <sequentialNumbers/>
             </conductor>
-            <conductor num="_" conductor_color="" type="multi" element2_name="Magneto-thermal circuit breaker" x="0" y="0" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" element1_name="Three-pole source + PE +N" bicolor="false" element1="{76d7fcf0-0bbc-47df-bb27-8c730689d0f0}" condsize="1" numsize="7" element2="{920889a8-b0d2-46ce-9315-1d67cbe3c47e}" tension_protocol="" dash-size="1" bus="" freezeLabel="false" conductor_section="" vertical-alignment="AlignRight" terminal1="{6996d331-855c-4aaa-9dd0-02ca5028d882}" terminalname1="L1" terminal2="{cfad515d-f19a-467a-97c0-9e56ab76d4c1}" terminalname2="1" element2_label="Q1" element1_label="FONTE" function="" horizontal-alignment="AlignBottom" text_color="#000000" formula="" cable="">
-                <sequentialNumbers/>
-            </conductor>
-            <conductor num="_" conductor_color="" type="multi" element2_name="Thermal relay" x="0" y="0" element2_linked="" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" element1_name="AC MOTOR 3-Phases" bicolor="false" element1="{85f86443-e701-469d-982b-2d71fcfbac97}" condsize="1" element2="{e22603af-2b83-48a6-93b9-28ae3f5f3d80}" numsize="7" tension_protocol="" dash-size="1" bus="" freezeLabel="false" conductor_section="" vertical-alignment="AlignRight" terminal1="{eac11a53-76cd-4048-a89a-3b2056a4e807}" terminalname1="" terminal2="{eaf87a17-71eb-47d5-92f3-dc8f6af4efde}" terminalname2="" element2_label="F1" element1_label="M1" function="" horizontal-alignment="AlignBottom" text_color="#000000" formula="" cable="">
-                <sequentialNumbers/>
-            </conductor>
             <conductor num="_" conductor_color="" type="multi" element2_name="Contact power contactor" x="0" element1_linked="" y="0" element2_linked="K1" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" element1_name="Thermal relay" bicolor="false" element1="{e22603af-2b83-48a6-93b9-28ae3f5f3d80}" condsize="1" element2="{42599d49-e110-4c9a-88b4-0e118b395db1}" numsize="7" tension_protocol="" dash-size="1" bus="" freezeLabel="false" conductor_section="" vertical-alignment="AlignRight" terminal1="{1036e476-51b9-4ba7-aba3-47d380dd5e75}" terminalname1="" terminal2="{6c89feb6-b0da-4cc2-86d3-5d182c3a3050}" terminalname2="" element2_label="" element1_label="F1" function="" horizontal-alignment="AlignBottom" text_color="#000000" formula="" cable="">
                 <sequentialNumbers/>
             </conductor>
-            <conductor num="_" conductor_color="" type="multi" element2_name="Magneto-thermal circuit breaker" x="0" y="0" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" element1_name="Three-pole source + PE +N" bicolor="false" element1="{76d7fcf0-0bbc-47df-bb27-8c730689d0f0}" condsize="1" numsize="7" element2="{920889a8-b0d2-46ce-9315-1d67cbe3c47e}" tension_protocol="" dash-size="1" bus="" freezeLabel="false" conductor_section="" vertical-alignment="AlignRight" terminal1="{639ce249-0313-4c33-8ce4-0c09df4b43ab}" terminalname1="L2" terminal2="{39ebd598-11ef-4b04-9f54-f5b91e211c5c}" terminalname2="3" element2_label="Q1" element1_label="FONTE" function="" horizontal-alignment="AlignBottom" text_color="#000000" formula="" cable="">
+            <conductor num="_" conductor_color="" type="multi" element2_name="Magneto-thermal circuit breaker" x="0" element1_linked="K1" y="0" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" element1_name="Contact power contactor" bicolor="false" element1="{42599d49-e110-4c9a-88b4-0e118b395db1}" condsize="1" element2="{920889a8-b0d2-46ce-9315-1d67cbe3c47e}" numsize="7" tension_protocol="" dash-size="1" bus="" freezeLabel="false" conductor_section="" vertical-alignment="AlignRight" terminal1="{84aa28c7-3ac0-445e-bd10-a7537643425e}" terminalname1="" terminal2="{3a71d8b8-b288-40ea-995c-646c276cbece}" terminalname2="N.out" element2_label="Q1" element1_label="" function="" horizontal-alignment="AlignBottom" text_color="#000000" formula="" cable="">
                 <sequentialNumbers/>
             </conductor>
-            <conductor num="_" conductor_color="" type="multi" element2_name="Three-pole source + PE +N" x="0" y="0" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" element1_name="Going arrow" bicolor="false" element1="{159f45f6-3368-4d70-96bc-2aa25234f74e}" condsize="1" numsize="7" element2="{76d7fcf0-0bbc-47df-bb27-8c730689d0f0}" tension_protocol="" dash-size="1" bus="" freezeLabel="false" conductor_section="" vertical-alignment="AlignRight" terminal1="{975add6f-4ba5-44af-a4c0-e1f1c2024601}" terminalname1="1" terminal2="{1ca64835-095b-4f91-943e-829d6702e206}" terminalname2="N" element2_label="FONTE" element1_label="" function="" horizontal-alignment="AlignBottom" text_color="#000000" formula="" cable="">
-                <sequentialNumbers/>
-            </conductor>
-            <conductor num="_" conductor_color="" type="multi" element2_name="Magneto-thermal circuit breaker" x="0" element1_linked="K1" y="0" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" element1_name="Contact power contactor" bicolor="false" element1="{42599d49-e110-4c9a-88b4-0e118b395db1}" condsize="1" element2="{920889a8-b0d2-46ce-9315-1d67cbe3c47e}" numsize="7" tension_protocol="" dash-size="1" bus="" freezeLabel="false" conductor_section="" vertical-alignment="AlignRight" terminal1="{e9e1da66-1fbb-4211-82aa-c021fad352ab}" terminalname1="" terminal2="{481b81c2-d00b-4630-9791-83f1ce8520bf}" terminalname2="2" element2_label="Q1" element1_label="" function="" horizontal-alignment="AlignBottom" text_color="#000000" formula="" cable="">
-                <sequentialNumbers/>
-            </conductor>
-            <conductor num="_" conductor_color="" type="multi" element2_name="Contact power contactor" x="0" element1_linked="" y="0" element2_linked="K1" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" element1_name="Thermal relay" bicolor="false" element1="{e22603af-2b83-48a6-93b9-28ae3f5f3d80}" condsize="1" element2="{42599d49-e110-4c9a-88b4-0e118b395db1}" numsize="7" tension_protocol="" dash-size="1" bus="" freezeLabel="false" conductor_section="" vertical-alignment="AlignRight" terminal1="{44f36e09-be1c-4be8-a00d-421b0d5114aa}" terminalname1="" terminal2="{65dc032c-33bf-43b1-ae82-c222bedc54df}" terminalname2="" element2_label="" element1_label="F1" function="" horizontal-alignment="AlignBottom" text_color="#000000" formula="" cable="">
-                <sequentialNumbers/>
-            </conductor>
-            <conductor num="_" conductor_color="" type="multi" element2_name="Magneto-thermal circuit breaker" x="0" element1_linked="K1" y="0" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" element1_name="Contact power contactor" bicolor="false" element1="{42599d49-e110-4c9a-88b4-0e118b395db1}" condsize="1" element2="{920889a8-b0d2-46ce-9315-1d67cbe3c47e}" numsize="7" tension_protocol="" dash-size="1" bus="" freezeLabel="false" conductor_section="" vertical-alignment="AlignRight" terminal1="{58c8dc1c-4c6d-46c1-8281-5dd52094f6b3}" terminalname1="" terminal2="{6348d368-3f81-4b45-b8dd-7ae5cfeacef8}" terminalname2="4" element2_label="Q1" element1_label="" function="" horizontal-alignment="AlignBottom" text_color="#000000" formula="" cable="">
+            <conductor num="_" conductor_color="" type="multi" element2_name="Thermal relay" x="0" y="0" element2_linked="" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" element1_name="AC MOTOR 3-Phases" bicolor="false" element1="{85f86443-e701-469d-982b-2d71fcfbac97}" condsize="1" element2="{e22603af-2b83-48a6-93b9-28ae3f5f3d80}" numsize="7" tension_protocol="" dash-size="1" bus="" freezeLabel="false" conductor_section="" vertical-alignment="AlignRight" terminal1="{eac11a53-76cd-4048-a89a-3b2056a4e807}" terminalname1="" terminal2="{eaf87a17-71eb-47d5-92f3-dc8f6af4efde}" terminalname2="" element2_label="F1" element1_label="M1" function="" horizontal-alignment="AlignBottom" text_color="#000000" formula="" cable="">
                 <sequentialNumbers/>
             </conductor>
             <conductor num="_" conductor_color="" type="multi" element2_name="Contact power contactor" x="0" element1_linked="" y="0" element2_linked="K1" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" element1_name="Thermal relay" bicolor="false" element1="{e22603af-2b83-48a6-93b9-28ae3f5f3d80}" condsize="1" element2="{42599d49-e110-4c9a-88b4-0e118b395db1}" numsize="7" tension_protocol="" dash-size="1" bus="" freezeLabel="false" conductor_section="" vertical-alignment="AlignRight" terminal1="{f51fcf7d-6419-41dc-ae7f-87954f3396f1}" terminalname1="" terminal2="{7a8e1404-d8b0-4ddb-a91e-e9f1b8072f00}" terminalname2="" element2_label="" element1_label="F1" function="" horizontal-alignment="AlignBottom" text_color="#000000" formula="" cable="">
@@ -228,22 +227,84 @@
             <conductor num="_" conductor_color="" type="multi" element2_name="Magneto-thermal circuit breaker" x="0" y="0" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" element1_name="Three-pole source + PE +N" bicolor="false" element1="{76d7fcf0-0bbc-47df-bb27-8c730689d0f0}" condsize="1" numsize="7" element2="{920889a8-b0d2-46ce-9315-1d67cbe3c47e}" tension_protocol="" dash-size="1" bus="" freezeLabel="false" conductor_section="" vertical-alignment="AlignRight" terminal1="{91bca3aa-68f6-4026-8bb9-d22de4ab6b33}" terminalname1="L3" terminal2="{bc4c89fb-22f8-4d5e-bff6-014b694b7204}" terminalname2="5" element2_label="Q1" element1_label="FONTE" function="" horizontal-alignment="AlignBottom" text_color="#000000" formula="" cable="">
                 <sequentialNumbers/>
             </conductor>
+            <conductor num="_" conductor_color="" type="multi" element2_name="Contact power contactor" x="0" element1_linked="" y="0" element2_linked="K1" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" element1_name="Thermal relay" bicolor="false" element1="{e22603af-2b83-48a6-93b9-28ae3f5f3d80}" condsize="1" element2="{42599d49-e110-4c9a-88b4-0e118b395db1}" numsize="7" tension_protocol="" dash-size="1" bus="" freezeLabel="false" conductor_section="" vertical-alignment="AlignRight" terminal1="{44f36e09-be1c-4be8-a00d-421b0d5114aa}" terminalname1="" terminal2="{65dc032c-33bf-43b1-ae82-c222bedc54df}" terminalname2="" element2_label="" element1_label="F1" function="" horizontal-alignment="AlignBottom" text_color="#000000" formula="" cable="">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor num="_" conductor_color="" type="multi" element2_name="Magneto-thermal circuit breaker" x="0" element1_linked="K1" y="0" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" element1_name="Contact power contactor" bicolor="false" element1="{42599d49-e110-4c9a-88b4-0e118b395db1}" condsize="1" element2="{920889a8-b0d2-46ce-9315-1d67cbe3c47e}" numsize="7" tension_protocol="" dash-size="1" bus="" freezeLabel="false" conductor_section="" vertical-alignment="AlignRight" terminal1="{e9e1da66-1fbb-4211-82aa-c021fad352ab}" terminalname1="" terminal2="{481b81c2-d00b-4630-9791-83f1ce8520bf}" terminalname2="2" element2_label="Q1" element1_label="" function="" horizontal-alignment="AlignBottom" text_color="#000000" formula="" cable="">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor num="_" conductor_color="" type="multi" element2_name="Magneto-thermal circuit breaker" x="0" element1_linked="K1" y="0" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" element1_name="Contact power contactor" bicolor="false" element1="{42599d49-e110-4c9a-88b4-0e118b395db1}" condsize="1" element2="{920889a8-b0d2-46ce-9315-1d67cbe3c47e}" numsize="7" tension_protocol="" dash-size="1" bus="" freezeLabel="false" conductor_section="" vertical-alignment="AlignRight" terminal1="{58c8dc1c-4c6d-46c1-8281-5dd52094f6b3}" terminalname1="" terminal2="{6348d368-3f81-4b45-b8dd-7ae5cfeacef8}" terminalname2="4" element2_label="Q1" element1_label="" function="" horizontal-alignment="AlignBottom" text_color="#000000" formula="" cable="">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor num="_" conductor_color="" type="multi" element2_name="Magneto-thermal circuit breaker" x="0" y="0" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" element1_name="Three-pole source + PE +N" bicolor="false" element1="{76d7fcf0-0bbc-47df-bb27-8c730689d0f0}" condsize="1" numsize="7" element2="{920889a8-b0d2-46ce-9315-1d67cbe3c47e}" tension_protocol="" dash-size="1" bus="" freezeLabel="false" conductor_section="" vertical-alignment="AlignRight" terminal1="{6996d331-855c-4aaa-9dd0-02ca5028d882}" terminalname1="L1" terminal2="{cfad515d-f19a-467a-97c0-9e56ab76d4c1}" terminalname2="1" element2_label="Q1" element1_label="FONTE" function="" horizontal-alignment="AlignBottom" text_color="#000000" formula="" cable="">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor num="_" conductor_color="" type="multi" element2_name="Magneto-thermal circuit breaker" x="0" y="0" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" element1_name="Three-pole source + PE +N" bicolor="false" element1="{76d7fcf0-0bbc-47df-bb27-8c730689d0f0}" condsize="1" numsize="7" element2="{920889a8-b0d2-46ce-9315-1d67cbe3c47e}" tension_protocol="" dash-size="1" bus="" freezeLabel="false" conductor_section="" vertical-alignment="AlignRight" terminal1="{639ce249-0313-4c33-8ce4-0c09df4b43ab}" terminalname1="L2" terminal2="{39ebd598-11ef-4b04-9f54-f5b91e211c5c}" terminalname2="3" element2_label="Q1" element1_label="FONTE" function="" horizontal-alignment="AlignBottom" text_color="#000000" formula="" cable="">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor num="" conductor_color="" type="multi" element2_name="One-phase alternating > Direct" x="0" element1_linked="" y="0" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" element1_name="Going arrow" bicolor="false" element1="{6a74f62f-3beb-4017-a256-326db881f4dd}" condsize="1" element2="{512a719b-9dfa-421a-976c-358582541fd9}" numsize="7" tension_protocol="" dash-size="1" bus="" freezeLabel="false" conductor_section="" vertical-alignment="AlignRight" terminal1="{975add6f-4ba5-44af-a4c0-e1f1c2024601}" terminalname1="1" terminal2="{5a72408e-f4ce-4a2e-910a-cb6ac481b06b}" terminalname2="L+" element2_label="FONTE DC 24 V" element1_label="" function="" horizontal-alignment="AlignBottom" text_color="#000000" formula="" cable="">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor num="_" conductor_color="" type="multi" element2_name="Three-pole source + PE +N" x="0" y="0" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" element1_name="One-phase alternating > Direct" bicolor="false" element1="{512a719b-9dfa-421a-976c-358582541fd9}" condsize="1" numsize="7" element2="{76d7fcf0-0bbc-47df-bb27-8c730689d0f0}" tension_protocol="" dash-size="1" bus="" freezeLabel="false" conductor_section="" vertical-alignment="AlignRight" terminal1="{1ea47dc7-4a51-40b8-9036-809b9cbb54ec}" terminalname1="L" terminal2="{6996d331-855c-4aaa-9dd0-02ca5028d882}" terminalname2="L1" element2_label="FONTE" element1_label="FONTE DC 24 V" function="" horizontal-alignment="AlignBottom" text_color="#000000" formula="" cable="">
+                <segment orientation="horizontal" length="-10"/>
+                <segment orientation="vertical" length="-20"/>
+                <segment orientation="horizontal" length="-120"/>
+                <segment orientation="horizontal" length="0"/>
+                <segment orientation="horizontal" length="-120"/>
+                <segment orientation="horizontal" length="-10"/>
+                <sequentialNumbers/>
+            </conductor>
+            <conductor num="_" conductor_color="" type="multi" element2_name="Three-pole source + PE +N" x="0" y="0" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" element1_name="One-phase alternating > Direct" bicolor="false" element1="{512a719b-9dfa-421a-976c-358582541fd9}" condsize="1" numsize="7" element2="{76d7fcf0-0bbc-47df-bb27-8c730689d0f0}" tension_protocol="" dash-size="1" bus="" freezeLabel="false" conductor_section="" vertical-alignment="AlignRight" terminal1="{e7236990-f185-431b-8046-b36f05fb72f0}" terminalname1="N" terminal2="{1ca64835-095b-4f91-943e-829d6702e206}" terminalname2="N" element2_label="FONTE" element1_label="FONTE DC 24 V" function="" horizontal-alignment="AlignBottom" text_color="#000000" formula="" cable="">
+                <segment orientation="horizontal" length="-10"/>
+                <segment orientation="vertical" length="30"/>
+                <segment orientation="horizontal" length="-120"/>
+                <segment orientation="horizontal" length="0"/>
+                <segment orientation="horizontal" length="-120"/>
+                <segment orientation="horizontal" length="-10"/>
+                <sequentialNumbers/>
+            </conductor>
+            <conductor num="" conductor_color="" type="multi" element2_name="One-phase alternating > Direct" x="0" element1_linked="" y="0" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" element1_name="Going arrow" bicolor="false" element1="{159f45f6-3368-4d70-96bc-2aa25234f74e}" condsize="1" element2="{512a719b-9dfa-421a-976c-358582541fd9}" numsize="7" tension_protocol="" dash-size="1" bus="" freezeLabel="false" conductor_section="" vertical-alignment="AlignRight" terminal1="{975add6f-4ba5-44af-a4c0-e1f1c2024601}" terminalname1="1" terminal2="{2d1ce5eb-fefd-46d6-aae2-ce2f0ba85f15}" terminalname2="L-" element2_label="FONTE DC 24 V" element1_label="" function="" horizontal-alignment="AlignBottom" text_color="#000000" formula="" cable="">
+                <sequentialNumbers/>
+            </conductor>
         </conductors>
     </diagram>
     <diagram colsize="60" indexrev="" displaycols="true" plant="" locmach="" title="" rows="8" rowsize="80" height="660" filename="" order="2" date="null" author="" version="0.100.0" freezeNewConductor="false" cols="17" displayAt="bottom" auto_page_num="" folio="%id/%total" displayrows="true" freezeNewElement="false">
         <defaultconductor num="_" conductor_color="" type="multi" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" bicolor="false" condsize="1" numsize="7" tension_protocol="" bus="" dash-size="1" conductor_section="" vertical-alignment="AlignRight" function="" horizontal-alignment="AlignBottom" text_color="#000000" cable="" formula=""/>
         <elements>
-            <element type="embed://import/10_electric/10_allpole/100_folio_referencing/01coming_arrow.elmt" x="280" y="100" z="10" freezeLabel="false" prefix="" uuid="{c4df18f4-5a1d-4183-b5c5-314276f26352}" orientation="0">
+            <element type="embed://import/10_electric/10_allpole/310_relays_contactors_contacts/02_contacts_cross_referencing/01_auxiliary_contacts/con_simple.elmt" x="450" y="400" z="10" freezeLabel="false" prefix="S" uuid="{d61e6974-982b-4a0b-a84c-e424e3f7fbbf}" orientation="0">
                 <terminals>
-                    <terminal x="9" y="0" id="0" orientation="1"/>
+                    <terminal x="0" y="-16" id="0" orientation="0"/>
+                    <terminal x="0" y="16" id="1" orientation="2"/>
                 </terminals>
                 <inputs/>
                 <links_uuids>
-                    <link_uuid uuid="{6a74f62f-3beb-4017-a256-326db881f4dd}"/>
+                    <link_uuid uuid="{8343881d-2115-46d8-a6ed-d04460e996c6}"/>
                 </links_uuids>
                 <dynamic_texts>
-                    <dynamic_elmt_text frame="false" Halignment="AlignRight" x="-12" y="-11.5" rotation="0" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" text_width="-1" uuid="{14dd2097-633c-4913-9bd3-6299f8747ee5}" keep_visual_rotation="true" text_from="ElementInfo" Valignment="AlignTop">
+                    <dynamic_elmt_text frame="false" Halignment="AlignLeft" x="0" y="0" rotation="0" font="Liberation Sans,9,-1,0,50,0,0,0,0,0,Regular" text_width="-1" uuid="{cc20a9cf-cbb1-46d2-95e2-abd3505e6169}" keep_visual_rotation="true" text_from="UserText" Valignment="AlignTop">
                         <text></text>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element type="embed://import/10_electric/10_allpole/310_relays_contactors_contacts/02_contacts_cross_referencing/15_protection_contacts/act_thermique_nf_esclave.elmt" x="410" y="230" z="10" freezeLabel="false" prefix="S" uuid="{910b08ac-6f1e-4efb-b818-4021cec96f45}" orientation="0">
+                <terminals>
+                    <terminal x="0" y="-16" id="2" orientation="0"/>
+                    <terminal x="0" y="16" id="3" orientation="2"/>
+                </terminals>
+                <inputs/>
+                <links_uuids>
+                    <link_uuid uuid="{e22603af-2b83-48a6-93b9-28ae3f5f3d80}"/>
+                </links_uuids>
+                <dynamic_texts>
+                    <dynamic_elmt_text frame="false" Halignment="AlignLeft" x="-13" y="8" rotation="0" font="Liberation Sans,4,-1,5,25,0,0,0,0,0,Regular" text_width="-1" uuid="{9dd70c01-3918-4123-b280-b8e2624e37a6}" keep_visual_rotation="false" text_from="UserText" Valignment="AlignTop">
+                        <text>12</text>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text frame="false" Halignment="AlignLeft" x="-13" y="-24" rotation="0" font="Liberation Sans,4,-1,5,25,0,0,0,0,0,Regular" text_width="-1" uuid="{8a3d9937-ddce-4e93-bbd1-5bb50c267581}" keep_visual_rotation="false" text_from="UserText" Valignment="AlignTop">
+                        <text>11</text>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text frame="false" Halignment="AlignLeft" x="8" y="-12" rotation="0" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" text_width="-1" uuid="{4fdff728-d335-41b1-b32b-ab751d29bf80}" keep_visual_rotation="false" text_from="ElementInfo" Valignment="AlignTop">
+                        <text>F1</text>
                         <info_name>label</info_name>
                     </dynamic_elmt_text>
                 </dynamic_texts>
@@ -251,7 +312,7 @@
             </element>
             <element type="embed://import/10_electric/10_allpole/100_folio_referencing/01coming_arrow.elmt" x="280" y="550" z="10" freezeLabel="false" prefix="" uuid="{ffc99bfb-08e0-431e-a211-c3e8ba610e8e}" orientation="0">
                 <terminals>
-                    <terminal x="9" y="0" id="1" orientation="1"/>
+                    <terminal x="9" y="0" id="4" orientation="1"/>
                 </terminals>
                 <inputs/>
                 <links_uuids>
@@ -259,25 +320,23 @@
                 </links_uuids>
                 <dynamic_texts>
                     <dynamic_elmt_text frame="false" Halignment="AlignRight" x="-12" y="-11.5" rotation="0" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" text_width="-1" uuid="{49c7ba71-cf13-492b-a3d4-5cc697c978d1}" keep_visual_rotation="true" text_from="ElementInfo" Valignment="AlignTop">
-                        <text></text>
+                        <text>1-B10</text>
                         <info_name>label</info_name>
                     </dynamic_elmt_text>
                 </dynamic_texts>
                 <texts_groups/>
             </element>
-            <element type="embed://import/10_electric/10_allpole/380_signaling_operating/20_push_buttons/poussoir_nf.elmt" x="410" y="140" z="10" freezeLabel="false" prefix="S" uuid="{6155701e-6b4d-4d51-84b5-3f0518b323a3}" orientation="0">
+            <element type="embed://import/10_electric/10_allpole/100_folio_referencing/01coming_arrow.elmt" x="280" y="100" z="10" freezeLabel="false" prefix="" uuid="{c4df18f4-5a1d-4183-b5c5-314276f26352}" orientation="0">
                 <terminals>
-                    <terminal x="0" y="-17" id="2" orientation="0"/>
-                    <terminal x="0" y="17" id="3" orientation="2"/>
+                    <terminal x="9" y="0" id="5" orientation="1"/>
                 </terminals>
                 <inputs/>
-                <elementInformations>
-                    <elementInformation name="formula" show="1">S0</elementInformation>
-                    <elementInformation name="label" show="1">S0</elementInformation>
-                </elementInformations>
+                <links_uuids>
+                    <link_uuid uuid="{6a74f62f-3beb-4017-a256-326db881f4dd}"/>
+                </links_uuids>
                 <dynamic_texts>
-                    <dynamic_elmt_text frame="false" Halignment="AlignLeft" x="5.75" y="-9.5" rotation="0" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" text_width="-1" uuid="{f7cd6d74-f183-4d17-b0ea-c29de57ca3d2}" keep_visual_rotation="false" text_from="ElementInfo" Valignment="AlignTop">
-                        <text>S0</text>
+                    <dynamic_elmt_text frame="false" Halignment="AlignRight" x="-12" y="-11.5" rotation="0" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" text_width="-1" uuid="{14dd2097-633c-4913-9bd3-6299f8747ee5}" keep_visual_rotation="true" text_from="ElementInfo" Valignment="AlignTop">
+                        <text>1-A10</text>
                         <info_name>label</info_name>
                     </dynamic_elmt_text>
                 </dynamic_texts>
@@ -285,8 +344,8 @@
             </element>
             <element type="embed://import/10_electric/10_allpole/310_relays_contactors_contacts/01_coils/comm_electronique.elmt" x="410" y="490" z="10" freezeLabel="false" prefix="K" uuid="{8343881d-2115-46d8-a6ed-d04460e996c6}" orientation="0">
                 <terminals>
-                    <terminal x="0" y="-16" id="4" orientation="0"/>
-                    <terminal x="0" y="16" id="5" orientation="2"/>
+                    <terminal x="0" y="-16" id="6" orientation="0"/>
+                    <terminal x="0" y="16" id="7" orientation="2"/>
                 </terminals>
                 <inputs/>
                 <links_uuids>
@@ -313,8 +372,8 @@
             </element>
             <element type="embed://import/10_electric/10_allpole/380_signaling_operating/20_push_buttons/poussoir.elmt" x="410" y="400" z="10" freezeLabel="false" prefix="S" uuid="{326712a1-4836-484b-9325-fd00eb60428b}" orientation="0">
                 <terminals>
-                    <terminal x="0" y="-17" id="6" orientation="0"/>
-                    <terminal x="0" y="17" id="7" orientation="2"/>
+                    <terminal x="0" y="-17" id="8" orientation="0"/>
+                    <terminal x="0" y="17" id="9" orientation="2"/>
                 </terminals>
                 <inputs/>
                 <elementInformations>
@@ -329,40 +388,19 @@
                 </dynamic_texts>
                 <texts_groups/>
             </element>
-            <element type="embed://import/10_electric/10_allpole/310_relays_contactors_contacts/02_contacts_cross_referencing/01_auxiliary_contacts/con_simple.elmt" x="450" y="400" z="10" freezeLabel="false" prefix="S" uuid="{d61e6974-982b-4a0b-a84c-e424e3f7fbbf}" orientation="0">
+            <element type="embed://import/10_electric/10_allpole/380_signaling_operating/20_push_buttons/poussoir_nf.elmt" x="410" y="140" z="10" freezeLabel="false" prefix="S" uuid="{6155701e-6b4d-4d51-84b5-3f0518b323a3}" orientation="0">
                 <terminals>
-                    <terminal x="0" y="-16" id="8" orientation="0"/>
-                    <terminal x="0" y="16" id="9" orientation="2"/>
+                    <terminal x="0" y="-17" id="10" orientation="0"/>
+                    <terminal x="0" y="17" id="11" orientation="2"/>
                 </terminals>
                 <inputs/>
-                <links_uuids>
-                    <link_uuid uuid="{8343881d-2115-46d8-a6ed-d04460e996c6}"/>
-                </links_uuids>
+                <elementInformations>
+                    <elementInformation name="formula" show="1">S0</elementInformation>
+                    <elementInformation name="label" show="1">S0</elementInformation>
+                </elementInformations>
                 <dynamic_texts>
-                    <dynamic_elmt_text frame="false" Halignment="AlignLeft" x="0" y="0" rotation="0" font="Liberation Sans,9,-1,0,50,0,0,0,0,0,Regular" text_width="-1" uuid="{cc20a9cf-cbb1-46d2-95e2-abd3505e6169}" keep_visual_rotation="true" text_from="UserText" Valignment="AlignTop">
-                        <text></text>
-                    </dynamic_elmt_text>
-                </dynamic_texts>
-                <texts_groups/>
-            </element>
-            <element type="embed://import/10_electric/10_allpole/310_relays_contactors_contacts/02_contacts_cross_referencing/15_protection_contacts/act_thermique_nf_esclave.elmt" x="410" y="230" z="10" freezeLabel="false" prefix="S" uuid="{910b08ac-6f1e-4efb-b818-4021cec96f45}" orientation="0">
-                <terminals>
-                    <terminal x="0" y="-16" id="10" orientation="0"/>
-                    <terminal x="0" y="16" id="11" orientation="2"/>
-                </terminals>
-                <inputs/>
-                <links_uuids>
-                    <link_uuid uuid="{e22603af-2b83-48a6-93b9-28ae3f5f3d80}"/>
-                </links_uuids>
-                <dynamic_texts>
-                    <dynamic_elmt_text frame="false" Halignment="AlignLeft" x="-13" y="8" rotation="0" font="Liberation Sans,4,-1,5,25,0,0,0,0,0,Regular" text_width="-1" uuid="{9dd70c01-3918-4123-b280-b8e2624e37a6}" keep_visual_rotation="false" text_from="UserText" Valignment="AlignTop">
-                        <text>12</text>
-                    </dynamic_elmt_text>
-                    <dynamic_elmt_text frame="false" Halignment="AlignLeft" x="-13" y="-24" rotation="0" font="Liberation Sans,4,-1,5,25,0,0,0,0,0,Regular" text_width="-1" uuid="{8a3d9937-ddce-4e93-bbd1-5bb50c267581}" keep_visual_rotation="false" text_from="UserText" Valignment="AlignTop">
-                        <text>11</text>
-                    </dynamic_elmt_text>
-                    <dynamic_elmt_text frame="false" Halignment="AlignLeft" x="8" y="-12" rotation="0" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" text_width="-1" uuid="{4fdff728-d335-41b1-b32b-ab751d29bf80}" keep_visual_rotation="false" text_from="ElementInfo" Valignment="AlignTop">
-                        <text>F1</text>
+                    <dynamic_elmt_text frame="false" Halignment="AlignLeft" x="5.75" y="-9.5" rotation="0" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" text_width="-1" uuid="{f7cd6d74-f183-4d17-b0ea-c29de57ca3d2}" keep_visual_rotation="false" text_from="ElementInfo" Valignment="AlignTop">
+                        <text>S0</text>
                         <info_name>label</info_name>
                     </dynamic_elmt_text>
                 </dynamic_texts>
@@ -370,10 +408,10 @@
             </element>
         </elements>
         <conductors>
-            <conductor num="" conductor_color="" type="multi" element2_name="Push-button (NC)" x="0" y="0" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" element1_name="Coming arrow" bicolor="false" element1="{c4df18f4-5a1d-4183-b5c5-314276f26352}" condsize="1" numsize="7" element2="{6155701e-6b4d-4d51-84b5-3f0518b323a3}" tension_protocol="" dash-size="1" bus="" freezeLabel="false" conductor_section="" vertical-alignment="AlignRight" terminal1="{d7fd0bec-9f05-4651-a50b-29d7ffabeb41}" terminalname1="1" terminal2="{423b2f59-65a1-4c01-aa16-89cd2ab3ae93}" terminalname2="" element2_label="S0" element1_label="" function="" horizontal-alignment="AlignBottom" text_color="#000000" formula="" cable="">
+            <conductor num="" conductor_color="" type="multi" element2_name="Push-button (NC)" x="0" element1_linked="" y="0" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" element1_name="Coming arrow" bicolor="false" element1="{c4df18f4-5a1d-4183-b5c5-314276f26352}" condsize="1" element2="{6155701e-6b4d-4d51-84b5-3f0518b323a3}" numsize="7" tension_protocol="" dash-size="1" bus="" freezeLabel="false" conductor_section="" vertical-alignment="AlignRight" terminal1="{d7fd0bec-9f05-4651-a50b-29d7ffabeb41}" terminalname1="1" terminal2="{423b2f59-65a1-4c01-aa16-89cd2ab3ae93}" terminalname2="" element2_label="S0" element1_label="" function="" horizontal-alignment="AlignBottom" text_color="#000000" formula="" cable="">
                 <sequentialNumbers/>
             </conductor>
-            <conductor num="" conductor_color="" type="multi" element2_name="Electronic relay" x="0" y="0" element2_linked="" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" element1_name="Coming arrow" bicolor="false" element1="{ffc99bfb-08e0-431e-a211-c3e8ba610e8e}" condsize="1" element2="{8343881d-2115-46d8-a6ed-d04460e996c6}" numsize="7" tension_protocol="" dash-size="1" bus="" freezeLabel="false" conductor_section="" vertical-alignment="AlignRight" terminal1="{d7fd0bec-9f05-4651-a50b-29d7ffabeb41}" terminalname1="1" terminal2="{00010eac-39b1-4e53-9763-92e2e05e01e1}" terminalname2="A2" element2_label="K1" element1_label="" function="" horizontal-alignment="AlignBottom" text_color="#000000" formula="" cable="">
+            <conductor num="" conductor_color="" type="multi" element2_name="Electronic relay" x="0" element1_linked="" y="0" element2_linked="" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" element1_name="Coming arrow" bicolor="false" element1="{ffc99bfb-08e0-431e-a211-c3e8ba610e8e}" condsize="1" element2="{8343881d-2115-46d8-a6ed-d04460e996c6}" numsize="7" tension_protocol="" dash-size="1" bus="" freezeLabel="false" conductor_section="" vertical-alignment="AlignRight" terminal1="{d7fd0bec-9f05-4651-a50b-29d7ffabeb41}" terminalname1="1" terminal2="{00010eac-39b1-4e53-9763-92e2e05e01e1}" terminalname2="A2" element2_label="K1" element1_label="" function="" horizontal-alignment="AlignBottom" text_color="#000000" formula="" cable="">
                 <sequentialNumbers/>
             </conductor>
             <conductor num="" conductor_color="" type="multi" element2_name="Push-button" x="0" element1_linked="F1" y="0" displaytext="1" vertirotatetext="270" onetextperfolio="0" color2="#000000" horizrotatetext="0" element1_name="Thermal relay NC" bicolor="false" element1="{910b08ac-6f1e-4efb-b818-4021cec96f45}" condsize="1" element2="{326712a1-4836-484b-9325-fd00eb60428b}" numsize="7" tension_protocol="" dash-size="1" bus="" freezeLabel="false" conductor_section="" vertical-alignment="AlignRight" terminal1="{eb9774be-9678-4cf0-9a72-c4092437890a}" terminalname1="" terminal2="{1db4e4bd-ec1e-4fdb-84cb-2d7d0b7cac74}" terminalname2="" element2_label="S1" element1_label="" function="" horizontal-alignment="AlignBottom" text_color="#000000" formula="" cable="">
@@ -1597,6 +1635,86 @@ License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
                                 </description>
                             </definition>
                         </element>
+                    </category>
+                    <category name="330_transformers_power_supplies">
+                        <names>
+                            <name lang="cs">Trasformátory a proudové zdroje</name>
+                            <name lang="da">Transformer og strømforsyninger</name>
+                            <name lang="de">Transformatoren und Versorgungen</name>
+                            <name lang="el">Μετασχηματιστές και παροχές ισχύος</name>
+                            <name lang="en">Transformers and power supplies</name>
+                            <name lang="es">Transformadores y fuentes de potencia</name>
+                            <name lang="fr">Transformateurs et alimentations</name>
+                            <name lang="it">Trasformatori e alimentatori</name>
+                            <name lang="ja">変圧器と電源</name>
+                            <name lang="nl">Transformatoren en Voedingen</name>
+                            <name lang="pl">Transformatory i zasilacze</name>
+                            <name lang="pt_BR">Transformadores e fontes</name>
+                            <name lang="ru">Трансформаторы и источники питания</name>
+                        </names>
+                        <category name="30_power_supplies">
+                            <names>
+                                <name lang="cs">Napájecí zdroje</name>
+                                <name lang="da">Strømforsyninger</name>
+                                <name lang="de">Netzgeräte</name>
+                                <name lang="el">Παροχές ισχύος</name>
+                                <name lang="en">Power supplies</name>
+                                <name lang="es">Fuentes de poder</name>
+                                <name lang="fr">Alimentations</name>
+                                <name lang="it">Alimentatori</name>
+                                <name lang="nl">Voedingen</name>
+                                <name lang="pl">Zasilacze</name>
+                                <name lang="ru">Источники питания</name>
+                            </names>
+                            <element name="ac2_dc.elmt">
+                                <definition type="element" link_type="simple" hotspot_x="30" hotspot_y="25" width="60" height="40" version="0.90">
+                                    <uuid uuid="{01d12d8d-d804-7851-fedd-acdd23e2c3b0}"/>
+                                    <names>
+                                        <name lang="ar">موحد أحادي الوجه -2</name>
+                                        <name lang="ca">Altern monofàsic u003e Directe</name>
+                                        <name lang="cs">Napájecí zdroj AC/DC</name>
+                                        <name lang="de">Netzteil AC/DC</name>
+                                        <name lang="el">Μονοφασικό εναλλασσόμενο > Συνεχές</name>
+                                        <name lang="en">One-phase alternating > Direct</name>
+                                        <name lang="es">Alterna monofásica > Continua</name>
+                                        <name lang="fr">Alternatif monophasé > Continu</name>
+                                        <name lang="it">AC monofase > DC</name>
+                                        <name lang="nl">Wisselspanning eenfase > gelijkspanning  AC1 > DC</name>
+                                        <name lang="nl_BE">Wisselspanning een fase > gelijkspanning  AC1 > DC</name>
+                                        <name lang="pl">Zasilacz jednofazowy</name>
+                                    </names>
+                                    <informations>Author: The QElectroTech team
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+                                    <description>
+                                        <text x="-13" y="2" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" text="N"/>
+                                        <text x="-13" y="-7.67" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" text="L"/>
+                                        <line end1="none" end2="none" y1="0" antialias="false" y2="0" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="9" length1="1.5" x2="13" length2="1.5"/>
+                                        <line end1="none" end2="none" y1="-12" antialias="false" y2="-8" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="11" length1="1.5" x2="11" length2="1.5"/>
+                                        <line end1="none" end2="none" y1="-10" antialias="false" y2="-10" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="9" length1="1.5" x2="13" length2="1.5"/>
+                                        <dynamic_text Halignment="AlignLeft" frame="false" x="-16" y="-44.33" z="6" rotation="0" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" text_width="-1" uuid="{e8b12ed7-592b-4935-bc53-b4cc281432e9}" keep_visual_rotation="false" Valignment="AlignTop" text_from="ElementInfo">
+                                            <text/>
+                                            <info_name>label</info_name>
+                                        </dynamic_text>
+                                        <line end1="none" end2="none" y1="-10" antialias="false" y2="-10" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-15" length1="1.5" x2="-20" length2="1.5"/>
+                                        <polygon y1="-20" antialias="false" y2="-20" y3="10" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-15" y4="10" x2="15" x3="15" x4="-15"/>
+                                        <arc x="-3.5" y="-17.5" antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" start="185" width="5" height="5" angle="175"/>
+                                        <line end1="none" end2="none" y1="0" antialias="false" y2="0" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="20" length1="1.5" x2="15" length2="1.5"/>
+                                        <line end1="none" end2="none" y1="-10" antialias="false" y2="-10" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="15" length1="1.5" x2="20" length2="1.5"/>
+                                        <line end1="none" end2="none" y1="0" antialias="false" y2="0" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-20" length1="1.5" x2="-15" length2="1.5"/>
+                                        <line end1="none" end2="none" y1="4" antialias="false" y2="4" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="8" length1="1.5" x2="9.5" length2="1.5"/>
+                                        <line end1="none" end2="none" y1="4" antialias="false" y2="4" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="5" length1="1.5" x2="6.5" length2="1.5"/>
+                                        <line end1="none" end2="none" y1="4" antialias="false" y2="4" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="2" length1="1.5" x2="3.5" length2="1.5"/>
+                                        <line end1="none" end2="none" y1="6" antialias="false" y2="6" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="2" length1="1.5" x2="9.5" length2="1.5"/>
+                                        <arc x="-8.5" y="-17.5" antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" start="5" width="5" height="5" angle="175"/>
+                                        <line end1="none" end2="none" y1="-19.5" antialias="true" y2="9.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="14.5" length1="1.5" x2="-14.5" length2="1.5"/>
+                                        <terminal type="Generic" x="-20" y="-10" name="L" uuid="{1ea47dc7-4a51-40b8-9036-809b9cbb54ec}" orientation="w"/>
+                                        <terminal type="Generic" x="-20" y="0" name="N" uuid="{e7236990-f185-431b-8046-b36f05fb72f0}" orientation="w"/>
+                                        <terminal type="Generic" x="20" y="-10" name="L+" uuid="{5a72408e-f4ce-4a2e-910a-cb6ac481b06b}" orientation="e"/>
+                                        <terminal type="Generic" x="20" y="0" name="L-" uuid="{2d1ce5eb-fefd-46d6-aae2-ce2f0ba85f15}" orientation="e"/>
+                                    </description>
+                                </definition>
+                            </element>
+                        </category>
                     </category>
                 </category>
             </category>

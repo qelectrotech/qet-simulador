@@ -87,6 +87,8 @@ function classificar(tipo, def) {
   const t = def.nomes.join(" ");
   if (lt === "simple" && nomesBornes.size && [...nomesBornes].every(n => n === "L" || n === "N"))
     return ["fonte", null, null];            // fonte L+N, ou só fase (L) ou só neutro (N)
+  if (["L", "N", "L+", "L-"].every(n => nomesBornes.has(n)))
+    return ["fonte_cc", null, null];         // fonte retificadora: entrada L/N, saída L+/L-
   if (["L1", "L2", "L3"].every(n => nomesBornes.has(n))) return ["fonte3f", null, null];
   if (lt === "master" && kind.type === "coil") return ["bobina", null, null];
   if (lt === "master" && kind.type === "protection") {
@@ -263,6 +265,27 @@ class Simulador {
       for (const [t, n] of Object.entries(e.bornes))
         if ((e.papel === papelFonte && n === nomeOrigem) || (e.papel === "fonte3f" && extra.includes(n)))
           origem.push(no(u, t));
+    const conv = Object.keys(this.el).filter(u => this.el[u].papel === "fonte_cc");
+    if (!extra.length || !conv.length) return this._bfs(origem, viz);
+    // Fonte retificadora: com L e N na entrada, a saída L+ vale como L e a L- como N
+    const borne = (u, nome) => Object.entries(this.el[u].bornes).filter(([, n]) => n === nome).map(([t]) => no(u, t));
+    const base = { L: [], N: [] };
+    for (const [u, e] of Object.entries(this.el))
+      for (const [t, n] of Object.entries(e.bornes)) {
+        if ((e.papel === "fonte" && n === "L") || (e.papel === "fonte3f" && ["L1", "L2", "L3"].includes(n)))
+          base.L.push(no(u, t));
+        if ((e.papel === "fonte" || e.papel === "fonte3f") && n === "N") base.N.push(no(u, t));
+      }
+    let ativos = new Set();
+    for (;;) {
+      const vL = this._bfs([...base.L, ...[...ativos].flatMap(u => borne(u, "L+"))], viz);
+      const vN = this._bfs([...base.N, ...[...ativos].flatMap(u => borne(u, "L-"))], viz);
+      const novos = new Set(conv.filter(u => borne(u, "L").some(b => vL.has(b)) && borne(u, "N").some(b => vN.has(b))));
+      if (novos.size === ativos.size && [...novos].every(u => ativos.has(u))) return nomeOrigem === "L" ? vL : vN;
+      ativos = novos;
+    }
+  }
+  _bfs(origem, viz) {
     const vistos = new Set(origem), fila = [...origem];
     while (fila.length) {
       const n = fila.shift();
