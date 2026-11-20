@@ -321,7 +321,10 @@ class Simulador:
             vL = self._bfs(base["L"] + [b for u in ativos if u in conv for b in borne(u, "L+")]
                            + [sb(u, "saida") for u in ativos if u in sens], viz)
             vN = self._bfs(base["N"] + [b for u in ativos if u in conv for b in borne(u, "L-")], viz)
-            novos = {u for u in conv if set(borne(u, "L")) & vL and set(borne(u, "N")) & vN}
+            # (a fonte funciona com L e N trocados na entrada, como uma fonte real)
+            novos = {u for u in conv
+                     if (set(borne(u, "L")) & vL and set(borne(u, "N")) & vN)
+                     or (set(borne(u, "N")) & vL and set(borne(u, "L")) & vN)}
             novos |= {u for u in sens if sb(u, "+") in vL and sb(u, "-") in vN
                       and self.detectado[u] != (self.el[u]["estado_normal"] == "NC")}
             if novos == ativos:

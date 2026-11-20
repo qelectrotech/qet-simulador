@@ -311,7 +311,9 @@ class Simulador {
       const vL = this._bfs([...base.L, ...at.filter(u => conv.includes(u)).flatMap(u => borne(u, "L+")),
                             ...at.filter(u => sens.includes(u)).map(u => sb(u, "saida"))], viz);
       const vN = this._bfs([...base.N, ...at.filter(u => conv.includes(u)).flatMap(u => borne(u, "L-"))], viz);
-      const novos = new Set(conv.filter(u => borne(u, "L").some(b => vL.has(b)) && borne(u, "N").some(b => vN.has(b))));
+      // (a fonte funciona com L e N trocados na entrada, como uma fonte real)
+      const tem = (u, nome, v) => borne(u, nome).some(b => v.has(b));
+      const novos = new Set(conv.filter(u => (tem(u, "L", vL) && tem(u, "N", vN)) || (tem(u, "N", vL) && tem(u, "L", vN))));
       for (const u of sens)
         if (vL.has(sb(u, "+")) && vN.has(sb(u, "-")) && this.detectado[u] !== (this.el[u].estado_normal === "NC"))
           novos.add(u);
